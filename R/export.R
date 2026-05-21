@@ -43,6 +43,9 @@ export_mdb <- function(
   if (missing(table)) {
     stop("Must define a table name, list with mdb_tables()", call. = FALSE)
   }
+  if (identical(output, FALSE) || is.null(output)) {
+    return(invisible(NULL))
+  }
   quote_escape <- switch(
     standardize_escape(quote_escape),
     double = "\"",
@@ -64,8 +67,6 @@ export_mdb <- function(
 
   if (isTRUE(output)) {
     return(out)
-  } else if (identical(output, FALSE) || is.null(output)) {
-    return(invisible(NULL))
   } else if (identical(output, "")) {
     cat(out)
     return(invisible(out))

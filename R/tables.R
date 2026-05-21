@@ -30,16 +30,20 @@ mdb_tables <- function(
   path <- .mdb_normalize_path(file)
   need_sys <- isTRUE(system) || type %in% c("systable", "all", "any")
   user_tables <- .native_list_tables(path, system = FALSE)
-  sys_tables  <- if (need_sys) .native_list_tables(path, system = TRUE) else character(0)
-  queries     <- .native_list_queries(path)
+  sys_tables <- if (need_sys) {
+    .native_list_tables(path, system = TRUE)
+  } else {
+    character(0)
+  }
+  queries <- .native_list_queries(path)
 
   out <- switch(
     type,
-    table    = user_tables,
-    query    = queries,
+    table = user_tables,
+    query = queries,
     systable = sys_tables,
-    any      = c(user_tables, queries),
-    all      = c(user_tables, sys_tables, queries),
+    any = c(user_tables, queries),
+    all = c(user_tables, sys_tables, queries),
     {
       warning(
         sprintf(
@@ -69,7 +73,6 @@ mdb_tables <- function(
       )
     )
   }
-
 
   out
 }

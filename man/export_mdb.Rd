@@ -22,7 +22,7 @@ export_mdb(
 \item{table}{Name of the table, list with \code{mdb_tables()}.}
 
 \item{output}{Path or connection to write to. Passed to the \code{stdout} argument
-of \code{\link[=system2]{system2()}}. Possible values are "", to the R console (the default),
+of \code{\link[=system2]{system2()}}. Possible values are \code{""}, to the R console (the default),
 \code{NULL} or \code{FALSE} (discard output), \code{TRUE} (capture the output in a
 character vector) or a character string naming a file.}
 

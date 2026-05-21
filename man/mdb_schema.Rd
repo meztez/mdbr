@@ -2,26 +2,28 @@
 % Please edit documentation in R/schema.R
 \name{mdb_schema}
 \alias{mdb_schema}
-\title{Specification for columns in a table}
+\title{Column type codes for a table}
 \usage{
 mdb_schema(file, table, condense = FALSE)
 }
 \arguments{
 \item{file}{Path to the Microsoft Access file.}
 
-\item{table}{Name of the table, list with \code{mdb_tables()}.}
+\item{table}{Name of the table, list with \code{\link[=mdb_tables]{mdb_tables()}}.}
 
-\item{condense}{Should \code{\link[readr:spec]{readr::cols_condense()}} be called on the spec?}
+\item{condense}{When \code{TRUE}, return only the unique type codes present
+in the table rather than one entry per column.}
 }
 \value{
-A readr cols specification list.
+A named character vector of type codes.
 }
 \description{
-Used to determine the column types for \code{\link[=read_mdb]{read_mdb()}}. Passed to \code{col_types}
-in \code{readr::read_delim()}.
+Returns a named character vector mapping column names to type codes:
+\code{"c"} = character, \code{"i"} = integer, \code{"d"} = double,
+\code{"l"} = logical, \code{"T"} = datetime (POSIXct).
 }
 \examples{
 \dontrun{
-mdb_schema(mdb_example(), "Flights", condense = TRUE)
+mdb_schema(mdb_example(), "Flights")
 }
 }
