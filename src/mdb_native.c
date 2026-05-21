@@ -99,7 +99,7 @@ static void hash_to_vec_cb(gpointer key, gpointer value, gpointer data) {
   ctx->idx++;
 }
 
-static char *mdbtoolr_get_query_id(MdbHandle *mdb, const char *query_name) {
+static char *mdbr_get_query_id(MdbHandle *mdb, const char *query_name) {
   unsigned int i;
   MdbCatalogEntry *entry = NULL;
   MdbTableDef *table = NULL;
@@ -164,7 +164,7 @@ static char *mdbtoolr_get_query_id(MdbHandle *mdb, const char *query_name) {
   return NULL;
 }
 
-static char *mdbtoolr_build_query_sql(MdbHandle *mdb, const char *query_name) {
+static char *mdbr_build_query_sql(MdbHandle *mdb, const char *query_name) {
   unsigned int i;
   MdbCatalogEntry *entry = NULL;
   MdbCatalogEntry *sys_queries = NULL;
@@ -209,7 +209,7 @@ static char *mdbtoolr_build_query_sql(MdbHandle *mdb, const char *query_name) {
     return NULL;
   }
 
-  query_id = mdbtoolr_get_query_id(mdb, entry->object_name);
+  query_id = mdbr_get_query_id(mdb, entry->object_name);
   if (query_id == NULL) {
     return NULL;
   }
@@ -346,7 +346,7 @@ static char *mdbtoolr_build_query_sql(MdbHandle *mdb, const char *query_name) {
   return final_sql;
 }
 
-SEXP mdbtoolr_list_queries(SEXP path_sexp) {
+SEXP mdbr_list_queries(SEXP path_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   MdbHandle *mdb = NULL;
   GPtrArray *catalog = NULL;
@@ -377,7 +377,7 @@ SEXP mdbtoolr_list_queries(SEXP path_sexp) {
   return out;
 }
 
-SEXP mdbtoolr_get_query_sql(SEXP path_sexp, SEXP query_name_sexp) {
+SEXP mdbr_get_query_sql(SEXP path_sexp, SEXP query_name_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   const char *query_name = scalar_char(query_name_sexp, "query_name");
   MdbHandle *mdb = NULL;
@@ -395,7 +395,7 @@ SEXP mdbtoolr_get_query_sql(SEXP path_sexp, SEXP query_name_sexp) {
     Rf_error("Failed to read MDB/ACCDB catalog.");
   }
 
-  query_sql = mdbtoolr_build_query_sql(mdb, query_name);
+  query_sql = mdbr_build_query_sql(mdb, query_name);
   if (query_sql == NULL) {
     mdb_close(mdb);
     Rf_error("Query not found or unsupported query layout: %s", query_name);
@@ -408,7 +408,7 @@ SEXP mdbtoolr_get_query_sql(SEXP path_sexp, SEXP query_name_sexp) {
   return out;
 }
 
-SEXP mdbtoolr_print_schema(SEXP path_sexp, SEXP table_sexp, SEXP backend_sexp, SEXP namespace_sexp, SEXP options_sexp) {
+SEXP mdbr_print_schema(SEXP path_sexp, SEXP table_sexp, SEXP backend_sexp, SEXP namespace_sexp, SEXP options_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   const char *table_name = optional_scalar_char(table_sexp, "table");
   const char *backend_name = optional_scalar_char(backend_sexp, "backend");
@@ -673,11 +673,11 @@ SEXP mdbtoolr_print_schema(SEXP path_sexp, SEXP table_sexp, SEXP backend_sexp, S
   return out;
 }
 
-SEXP mdbtoolr_version(void) {
+SEXP mdbr_version(void) {
   return Rf_mkString(MDB_FULL_VERSION);
 }
 
-SEXP mdbtoolr_file_format(SEXP path_sexp) {
+SEXP mdbr_file_format(SEXP path_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   MdbHandle *mdb = NULL;
   const char *fmt = "UNKNOWN";
@@ -718,7 +718,7 @@ SEXP mdbtoolr_file_format(SEXP path_sexp) {
   return Rf_mkString(fmt);
 }
 
-SEXP mdbtoolr_prop_dump(SEXP path_sexp, SEXP name_sexp, SEXP propcol_sexp) {
+SEXP mdbr_prop_dump(SEXP path_sexp, SEXP name_sexp, SEXP propcol_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   const char *object_name = scalar_char(name_sexp, "name");
   const char *propcol = optional_scalar_char(propcol_sexp, "propcol");
@@ -844,7 +844,7 @@ SEXP mdbtoolr_prop_dump(SEXP path_sexp, SEXP name_sexp, SEXP propcol_sexp) {
   return res;
 }
 
-SEXP mdbtoolr_list_tables(SEXP path_sexp) {
+SEXP mdbr_list_tables(SEXP path_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   MdbHandle *mdb = NULL;
   GPtrArray *catalog = NULL;
@@ -876,7 +876,7 @@ SEXP mdbtoolr_list_tables(SEXP path_sexp) {
   return out;
 }
 
-SEXP mdbtoolr_list_fields(SEXP path_sexp, SEXP table_sexp) {
+SEXP mdbr_list_fields(SEXP path_sexp, SEXP table_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   const char *table_name = scalar_char(table_sexp, "table");
   MdbHandle *mdb = NULL;
@@ -914,7 +914,7 @@ SEXP mdbtoolr_list_fields(SEXP path_sexp, SEXP table_sexp) {
   return out;
 }
 
-SEXP mdbtoolr_table_num_rows(SEXP path_sexp, SEXP table_sexp) {
+SEXP mdbr_table_num_rows(SEXP path_sexp, SEXP table_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   const char *table_name = scalar_char(table_sexp, "table");
   MdbHandle *mdb = NULL;
@@ -938,7 +938,7 @@ SEXP mdbtoolr_table_num_rows(SEXP path_sexp, SEXP table_sexp) {
   return Rf_ScalarInteger(nrows);
 }
 
-SEXP mdbtoolr_read_table(SEXP path_sexp, SEXP table_sexp) {
+SEXP mdbr_read_table(SEXP path_sexp, SEXP table_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   const char *table_name = scalar_char(table_sexp, "table");
   const size_t bind_size = 65536;
@@ -1057,7 +1057,7 @@ SEXP mdbtoolr_read_table(SEXP path_sexp, SEXP table_sexp) {
   return out;
 }
 
-SEXP mdbtoolr_run_query(SEXP path_sexp, SEXP statement_sexp) {
+SEXP mdbr_run_query(SEXP path_sexp, SEXP statement_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   const char *statement = scalar_char(statement_sexp, "statement");
   const size_t bind_size = 65536;

@@ -20,47 +20,47 @@
 }
 
 .native_list_tables <- function(path) {
-  .Call("mdbtoolr_list_tables", PACKAGE = "mdbr", path)
+  .Call("mdbr_list_tables", PACKAGE = "mdbr", path)
 }
 
 .native_list_queries <- function(path) {
-  .Call("mdbtoolr_list_queries", PACKAGE = "mdbr", path)
+  .Call("mdbr_list_queries", PACKAGE = "mdbr", path)
 }
 
 .native_list_fields <- function(path, table) {
-  .Call("mdbtoolr_list_fields", PACKAGE = "mdbr", path, table)
+  .Call("mdbr_list_fields", PACKAGE = "mdbr", path, table)
 }
 
 .native_table_num_rows <- function(path, table) {
-  .Call("mdbtoolr_table_num_rows", PACKAGE = "mdbr", path, table)
+  .Call("mdbr_table_num_rows", PACKAGE = "mdbr", path, table)
 }
 
 .native_read_table <- function(path, table) {
-  .Call("mdbtoolr_read_table", PACKAGE = "mdbr", path, table)
+  .Call("mdbr_read_table", PACKAGE = "mdbr", path, table)
 }
 
 .native_run_query <- function(path, statement) {
-  .Call("mdbtoolr_run_query", PACKAGE = "mdbr", path, statement)
+  .Call("mdbr_run_query", PACKAGE = "mdbr", path, statement)
 }
 
 .native_get_query_sql <- function(path, query_name) {
-  .Call("mdbtoolr_get_query_sql", PACKAGE = "mdbr", path, query_name)
+  .Call("mdbr_get_query_sql", PACKAGE = "mdbr", path, query_name)
 }
 
 .native_print_schema <- function(path, table = NULL, backend = NULL, namespace = NULL, export_options = NULL) {
-  .Call("mdbtoolr_print_schema", PACKAGE = "mdbr", path, table, backend, namespace, export_options)
+  .Call("mdbr_print_schema", PACKAGE = "mdbr", path, table, backend, namespace, export_options)
 }
 
 .native_mdbtools_version <- function() {
-  .Call("mdbtoolr_version", PACKAGE = "mdbr")
+  .Call("mdbr_version", PACKAGE = "mdbr")
 }
 
 .native_file_format <- function(path) {
-  .Call("mdbtoolr_file_format", PACKAGE = "mdbr", path)
+  .Call("mdbr_file_format", PACKAGE = "mdbr", path)
 }
 
 .native_prop_dump <- function(path, name, propcol = NULL) {
-  .Call("mdbtoolr_prop_dump", PACKAGE = "mdbr", path, name, propcol)
+  .Call("mdbr_prop_dump", PACKAGE = "mdbr", path, name, propcol)
 }
 
 .trim_sql_semicolon <- function(x) {

@@ -2,7 +2,7 @@
 # package is installed), with a fallback to the system mdbtools binary for
 # users who have not yet upgraded to the compiled version.
 has_mdb_tools <- function() {
-  if (is.loaded("mdbtoolr_version")) {
+  if (is.loaded("mdbr_version")) {
     ver <- tryCatch(.native_mdbtools_version(), error = function(e) NULL)
     if (!is.null(ver) && nzchar(ver)) {
       return(stats::setNames(TRUE, ver))
