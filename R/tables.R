@@ -35,7 +35,7 @@ mdb_tables <- function(
 
   out <- switch(
     type,
-    table    = c(user_tables, sys_tables),
+    table    = user_tables,
     query    = queries,
     systable = sys_tables,
     any      = c(user_tables, queries),
@@ -51,6 +51,12 @@ mdb_tables <- function(
       character(0)
     }
   )
+
+  # system = TRUE appends system tables on top of type result
+  # (except systable/all which already contain them)
+  if (isTRUE(system) && !type %in% c("systable", "all")) {
+    out <- c(out, sys_tables)
+  }
 
   if (isTRUE(show_type)) {
     out <- ifelse(
