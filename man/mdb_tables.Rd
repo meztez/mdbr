@@ -28,5 +28,12 @@ Equivalent to \code{-t}.}
 A character vector of object names.
 }
 \description{
-List tables in a Microsoft Access database
+\code{mdb-tables} is a utility program distributed with MDB Tools.
+It outputs the names of all user tables (or other object types) in an MDB
+database file.
+}
+\examples{
+db <- mdb_example()
+mdb_tables(db)
+mdb_tables(db, type = "query")
 }

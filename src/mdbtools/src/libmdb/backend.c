@@ -197,7 +197,7 @@ quote_generic(const gchar *value, gchar quote_char, gchar escape_char) {
 	*pr++ = quote_char;
 	while ((c=*(unsigned char*)value++)) {
 		if (c<32) {
-			sprintf(pr, "\\%03o", c);
+			snprintf(pr, 5, "\\%03o", c);
 			pr+=4;
 			continue;
 		}

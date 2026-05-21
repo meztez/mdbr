@@ -1,5 +1,9 @@
 #' List tables in a Microsoft Access database
 #'
+#' `mdb-tables` is a utility program distributed with MDB Tools.
+#' It outputs the names of all user tables (or other object types) in an MDB
+#' database file.
+#'
 #' @param file Path to the Microsoft Access file.
 #' @param system Logical; include system (`MSys*`) tables. Equivalent to `-S`.
 #' @param type Object type to list: `"table"` (default), `"query"`,
@@ -8,6 +12,10 @@
 #'   Equivalent to `-t`.
 #' @param show_type Logical; prefix each entry with its type. Equivalent to `-T`.
 #' @return A character vector of object names.
+#' @examples
+#' db <- mdb_example()
+#' mdb_tables(db)
+#' mdb_tables(db, type = "query")
 #' @export
 mdb_tables <- function(
   file,

@@ -13,3 +13,9 @@ A DBI driver for '.mdb' and '.accdb' files.
 \code{mdb()} is the canonical DBI-style constructor for connecting to Microsoft
 Access '.mdb' and '.accdb' files.
 }
+\examples{
+db <- mdb_example()
+conn <- DBI::dbConnect(mdb(), dbname = db)
+DBI::dbListTables(conn)
+DBI::dbDisconnect(conn)
+}
