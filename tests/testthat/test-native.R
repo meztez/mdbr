@@ -55,9 +55,14 @@ test_that("mdb_count returns integer row count", {
   expect_gte(n, 1L)
 })
 
-test_that("mdb_ddl returns DDL text for a table", {
+test_that("mdb_schema returns DDL text for a table", {
   skip_if_not(is.loaded("mdbr_version"))
-  ddl <- mdb_ddl(mdb_example(), table = "Airlines", as_list = FALSE)
+  ddl <- mdb_schema(
+    mdb_example(),
+    table = "Airlines",
+    mode = "ddl",
+    as_list = FALSE
+  )
   expect_type(ddl, "character")
   expect_true(grepl("CREATE TABLE", ddl, ignore.case = TRUE))
 })
