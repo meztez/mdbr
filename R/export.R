@@ -71,7 +71,9 @@ export_mdb <- function(
     cat(out)
     return(invisible(out))
   } else {
-    writeLines(out, con = output, useBytes = TRUE)
+    con <- file(output, open = "wb")
+    on.exit(close(con), add = TRUE)
+    writeLines(out, con = con, useBytes = TRUE)
     return(invisible(output))
   }
 }
