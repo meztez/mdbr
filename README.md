@@ -14,14 +14,13 @@ coverage](https://img.shields.io/codecov/c/github/k5cents/mdbr/master.svg)](http
 ![Downloads](https://cranlogs.r-pkg.org/badges/grand-total/mdbr) [![R
 build
 status](https://github.com/k5cents/mdbr/workflows/R-CMD-check/badge.svg)](https://github.com/k5cents/mdbr/actions)
-[![R-CMD-check](https://github.com/k5cents/mdbr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/k5cents/mdbr/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of mdbr is to easily access the open source [MDB
 Tools](https://github.com/mdbtools/mdbtools) written by Brian Bruns. The
-MDB Tools command line utilities take proprietary Microsoft Access files
-and convert them to standard text files. This package is experimental
-and has only been tested on simple MDB databases.
+MDB Tools C library is now bundled with the package — no external
+installation is required. This package reads proprietary Microsoft
+Access files directly and returns standard R data frames.
 
 ## Installation
 
@@ -40,28 +39,10 @@ The development version can be installed from
 remotes::install_github("k5cents/mdbr")
 ```
 
-The user must install [MDB Tools](https://github.com/mdbtools/mdbtools)
-separately. For example, users on Debian systems can install the tools
-from the apt repository.
-
-``` bash
-sudo apt install mdbtools
-```
-
-On MacOS, the tools can be installed using homebrew.
-
-``` bash
-brew install mdbtools
-```
-
-More installation methods can be found on the package’s
-[README](https://github.com/mdbtools/mdbtools/blob/dev/README.md).
-
 ## Example
 
 ``` r
 library(mdbr)
-library(readr)
 ```
 
 The package comes with a version of the
@@ -78,7 +59,7 @@ mdb_tables(ex <- mdb_example())
 These tables can be exported as a delimited string or file.
 
 ``` r
-string <- export_mdb(ex, "Airlines", path = TRUE, delim = "|", quote = "'")
+string <- export_mdb(ex, "Airlines", output = TRUE, delim = "|", quote = "'")
 cat(string, sep = "\n")
 #> carrier|name
 #> '9E'|'Endeavor Air Inc.'
@@ -147,20 +128,15 @@ mdb-schema -T Airports nycflights13.mdb
 #> );
 ```
 
-This information can be interpreted as a [readr spec
-object](https://readr.tidyverse.org/reference/spec.html), which is used
-to accurately parse columns of a converted text file.
+This information is returned as a named character vector of type codes
+(`c` = character, `i` = integer, `d` = double, `l` = logical, `T` =
+datetime).
 
 ``` r
 mdb_schema(ex, "Airports", condense = TRUE)
-#> cols(
-#>   .default = col_character(),
-#>   lat = col_double(),
-#>   lon = col_double(),
-#>   alt = col_integer(),
-#>   tz = col_integer()
-#> )
+#> [1] "c" "d" "i"
 ```
 
 <!-- refs: start -->
+
 <!-- refs: end -->
