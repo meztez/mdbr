@@ -80,7 +80,7 @@ apply_vendor_diff_patches() {
     fi
 
     patch_name="$(basename "$patch_file")"
-    echo "[mdbtoolr] Applying vendor patch ${patch_name}"
+    echo "[mdbr] Applying vendor patch ${patch_name}"
 
     if [ "$patch_cmd" = "patch" ]; then
       if patch --dry-run -p1 -d "$TARGET_DIR" < "$patch_file" >/dev/null 2>&1; then
@@ -89,7 +89,7 @@ apply_vendor_diff_patches() {
       fi
 
       if patch --dry-run -R -p1 -d "$TARGET_DIR" < "$patch_file" >/dev/null 2>&1; then
-        echo "[mdbtoolr] Patch ${patch_name} already present upstream; skipping"
+        echo "[mdbr] Patch ${patch_name} already present upstream; skipping"
         continue
       fi
     else
@@ -99,7 +99,7 @@ apply_vendor_diff_patches() {
       fi
 
       if git apply --reverse --check --directory="$TARGET_DIR" "$patch_file" >/dev/null 2>&1; then
-        echo "[mdbtoolr] Patch ${patch_name} already present upstream; skipping"
+        echo "[mdbr] Patch ${patch_name} already present upstream; skipping"
         continue
       fi
     fi
@@ -118,7 +118,7 @@ apply_local_vendor_patches() {
   detect_header() {
     include_name="$1"
     compiler_bin="${CC:-cc}"
-    probe_file="${TMPDIR:-/tmp}/mdbtoolr-include-probe-$$.c"
+    probe_file="${TMPDIR:-/tmp}/mdbr-include-probe-$$.c"
 
     # Skip probing when no compiler is available; default to disabled in that case.
     if ! command -v "$compiler_bin" >/dev/null 2>&1; then
@@ -239,14 +239,14 @@ EOF
   fi
 }
 
-tmp_tarball="$(mktemp "${TMPDIR:-/tmp}/mdbtoolr-mdbtools-${VERSION}-XXXXXX.tar.gz")"
-tmp_testdata_tarball="$(mktemp "${TMPDIR:-/tmp}/mdbtoolr-mdbtestdata-XXXXXX.tar.gz")"
-tmp_extract="$(mktemp -d "${TMPDIR:-/tmp}/mdbtoolr-src-XXXXXX")"
+tmp_tarball="$(mktemp "${TMPDIR:-/tmp}/mdbr-mdbtools-${VERSION}-XXXXXX.tar.gz")"
+tmp_testdata_tarball="$(mktemp "${TMPDIR:-/tmp}/mdbr-mdbtestdata-XXXXXX.tar.gz")"
+tmp_extract="$(mktemp -d "${TMPDIR:-/tmp}/mdbr-src-XXXXXX")"
 trap 'rm -rf "$tmp_extract"; rm -f "$tmp_tarball" "$tmp_testdata_tarball"' EXIT INT TERM
 
-echo "[mdbtoolr] Downloading mdbtools v${VERSION} release tarball"
+echo "[mdbr] Downloading mdbtools v${VERSION} release tarball"
 if ! fetch "$tmp_tarball" "$URL_RELEASE"; then
-  echo "[mdbtoolr] Release tarball unavailable, falling back to GitHub archive"
+  echo "[mdbr] Release tarball unavailable, falling back to GitHub archive"
   fetch "$tmp_tarball" "$URL_GH_ARCHIVE"
 fi
 
@@ -271,9 +271,9 @@ if [ ! -x "$TARGET_DIR/configure" ]; then
   exit 1
 fi
 
-echo "[mdbtoolr] Vendored mdbtools source refreshed in $TARGET_DIR"
+echo "[mdbr] Vendored mdbtools source refreshed in $TARGET_DIR"
 
-echo "[mdbtoolr] Downloading mdbtestdata fixtures"
+echo "[mdbr] Downloading mdbtestdata fixtures"
 fetch "$tmp_testdata_tarball" "$TESTDATA_URL"
 
 test_extract="$tmp_extract/mdbtestdata"
@@ -291,4 +291,4 @@ mkdir -p "$TESTDATA_DIR"
 cp -R "$testdata_unpacked/data" "$TESTDATA_DIR"/
 cp -R "$testdata_unpacked/sql" "$TESTDATA_DIR"/
 
-echo "[mdbtoolr] Test fixtures refreshed in $TESTDATA_DIR"
+echo "[mdbr] Test fixtures refreshed in $TESTDATA_DIR"
