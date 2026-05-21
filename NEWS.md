@@ -9,7 +9,7 @@
   - `mdb_sql()` — run SQL queries directly against an MDB/ACCDB file.
   - `mdb_queries()` — list saved Access queries and retrieve their SQL.
   - `mdb_count()` — count rows in a table, optionally with a `WHERE` clause.
-  - `mdb_ddl()` — generate DDL (CREATE TABLE) schema in various SQL dialects.
+  - `mdb_schema()` — generate DDL (CREATE TABLE) schema in various SQL dialects with `mode = "ddl"`.
   - `mdb_ver()` — return the file format or the mdbtools library version.
   - `mdb_array()` — export a table as a named list of column vectors.
   - `mdb_export()` — export a table to CSV or SQL INSERT statements.
@@ -22,10 +22,10 @@
 * **No external dependencies**: `readr` has been removed. `read_mdb()` now reads
   tables directly via the bundled C library with automatic type coercion
   (integer, double, logical, POSIXct for DateTime, character otherwise).
-* **`mdb_schema()`** now returns a named character vector of type codes
-  (`c`/`i`/`d`/`l`/`T`) instead of a `readr` col_spec object.
+* **`mdb_schema()`** now covers both column-type inspection (default,
+  backward-compatible with mdbr <= 0.2.1) and DDL generation (`mode = "ddl"`)
 * **Backward-compatible**: `read_mdb()`, `export_mdb()`, `mdb_tables()`,
-  `mdb_schema()`, and `mdb_example()` function signatures are unchanged.
+  and `mdb_example()` function signatures are unchanged.
 * `mdb_tables()` gains additional optional arguments (`system`, `type`,
   `show_type`, `as_text`, `single_column`, `delimiter`) matching the `mdb-tables`
   CLI surface.

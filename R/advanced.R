@@ -1,3 +1,34 @@
+#' List Or Retrieve Queries In An MDB Database
+#'
+#' `mdb-queries` is a utility program distributed with MDB Tools.
+#' Without `query`, it lists the names of all saved queries in the database.
+#' With `query`, it returns the SQL text of the named query or queries.
+#'
+#' @param path Path to `.mdb`/`.accdb` file.
+#' @param query Character vector of query names. When `NULL` (the default),
+#'   the function lists available query names instead of fetching SQL.
+#' @param list Logical; when `TRUE` (the default) and `query` is `NULL`,
+#'   return the list of query names. Set to `FALSE` to suppress listing and
+#'   return `character(0)`.
+#' @param newline Logical; when `TRUE` and `as_text = TRUE`, collapse names
+#'   with `"\n"` instead of `delimiter`.
+#' @param delimiter Character scalar used to collapse query names when
+#'   `as_text = TRUE`. Default `" "`.
+#' @param as_text Logical; when `TRUE`, collapses the query name list into a
+#'   single string using `delimiter` (or `"\n"` if `newline = TRUE`).
+#' @param as_list Logical; defaults to `TRUE`. When `TRUE` and `query` is
+#'   supplied, wraps the result in a named `mdblist` object.
+#'
+#' @return When `query` is `NULL`: a character vector of query names (or a
+#'   collapsed string when `as_text = TRUE`). When `query` is supplied and
+#'   `as_list = TRUE`: a named `mdblist` of SQL text strings, one per query.
+#'   With a single query and `as_list = FALSE`: a character scalar.
+#' @examples
+#' db <- mdbr:::.mdb_example_nwind_path()
+#' if (nzchar(db)) {
+#'   mdb_queries(db)
+#'   mdb_queries(db, "Orders Qry")
+#' }
 #' @export
 mdb_queries <- function(
   path,
@@ -208,20 +239,26 @@ mdb_count <- function(path, table = NULL, where = NULL, version = FALSE) {
   as.integer(nrow(rows))
 }
 
-#' Generate Schema Creation DDL
+#' Generate Schema DDL or Column Types
 #'
-#' `mdb-schema` (`mdb_ddl`) is a utility program distributed with MDB Tools.
-#' It produces DDL (data definition language) output for the given database.
-#' This can be passed to another database to create a replica of the original
-#' Access table format.
+#' `mdb-schema` is a utility program distributed with MDB Tools. It produces
+#' DDL (data definition language) output for the given database, which can be
+#' passed to another database to recreate the Access table structure. With
+#' `mode = "legacy"` (the default), it returns a
+#' [readr col spec][readr::cols()] for the table instead.
 #'
 #' @param path Path to `.mdb`/`.accdb` file.
-#' @param table Single table option, equivalent to `-T/--table`. Default is to
-#' export all user tables.
+#' @param table Table name(s). For `mode = "ddl"`, defaults to all user tables.
+#'   For `mode = "legacy"`, exactly one table name must be given.
+#' @param mode `"legacy"` (default) returns a [readr::cols()] specification,
+#'   matching the k5cents/mdbr canonical API. Requires the \pkg{readr} package.
+#'   `"ddl"` returns DDL text.
+#' @param condense Logical; only used when `mode = "legacy"`. When `TRUE`,
+#'   passes the col spec through [readr::cols_condense()]. Default `FALSE`.
 #' @param namespace Prefix identifiers with namespace, equivalent to
-#' `-N/--namespace`.
+#' `-N/--namespace`. Only used when `mode = "ddl"`.
 #' @param backend Target DDL dialect. Supported values are `access`, `sybase`,
-#' `oracle`, `postgres`, `mysql`, and `sqlite`.
+#' `oracle`, `postgres`, `mysql`, and `sqlite`. Only used when `mode = "ddl"`.
 #' @param drop_table Issue `DROP TABLE` statements.
 #' @param not_null Include `NOT NULL` constraints.
 #' @param default_values Include `DEFAULT` values.
@@ -232,23 +269,25 @@ mdb_count <- function(path, table = NULL, where = NULL, version = FALSE) {
 #' implementation emits a placeholder comment; full FK export is not yet
 #' implemented.
 #' @param as_list Logical; defaults to `TRUE`. When `TRUE`, returns a named
-#' `mdblist` of DDL text entries keyed by table name.
+#' `mdblist` of DDL text entries keyed by table name. Only used when
+#' `mode = "ddl"`.
 #'
-#' @return When `as_list = TRUE`, a named `mdblist` of table-level DDL text.
-#' If `table = NULL`, all user tables are included. When `as_list = FALSE`,
-#' a character scalar is returned for a single table or for `table = NULL`, and
-#' a plain named list is returned for multiple tables.
+#' @return When `mode = "legacy"`, a [readr::cols()] specification (optionally
+#' condensed via [readr::cols_condense()]). Requires the \pkg{readr} package.
+#' When `mode = "ddl"` and `as_list = TRUE`, a named `mdblist` of table-level
+#' DDL text.
 #' @examples
 #' db <- mdbr:::.mdb_example_nwind_path()
 #' if (nzchar(db)) {
-#'   cat(mdb_schema(db, table = "Products", backend = "postgres", as_list = FALSE))
-#'   ddl <- mdb_schema(db, table = c("Products", "Orders"), as_list = TRUE)
-#'   ddl
+#'   mdb_schema(db, table = "Products")
+#'   mdb_schema(db, table = "Products", mode = "ddl")
 #' }
 #' @export
-mdb_ddl <- function(
+mdb_schema <- function(
   path,
   table = NULL,
+  mode = c("legacy", "ddl"),
+  condense = FALSE,
   namespace = NULL,
   backend = c("access", "sybase", "oracle", "postgres", "mysql", "sqlite"),
   drop_table = FALSE,
@@ -260,6 +299,52 @@ mdb_ddl <- function(
   relations = TRUE,
   as_list = TRUE
 ) {
+  mode <- match.arg(mode)
+  if (mode == "legacy") {
+    if (is.null(table) || length(table) != 1L) {
+      stop(
+        "mode = \"legacy\" requires exactly one table name.",
+        call. = FALSE
+      )
+    }
+    if (!requireNamespace("readr", quietly = TRUE)) {
+      stop(
+        "Package \"readr\" is needed for mode = \"legacy\". ",
+        "Install it with: install.packages(\"readr\")",
+        call. = FALSE
+      )
+    }
+    tbl <- as.character(table)[[1]]
+    path_norm <- .mdb_normalize_path(path)
+    x <- .native_print_schema(
+      path = path_norm,
+      table = tbl,
+      backend = "access",
+      namespace = NULL,
+      export_options = .mdb_schema_options()
+    )
+    x <- strsplit(x[[1]], "\n")[[1]]
+    x <- grep("^\t", x, value = TRUE)
+    x <- gsub("\t{3}", "|", x)
+    x <- gsub("^\t", "", x)
+    x <- gsub(",\\s*$", "", x)
+    x <- gsub("\\[|\\]", "", x)
+    x <- gsub("\\s\\(\\d+\\).*", "", x)
+    x <- gsub("\\sNOT NULL", "", x)
+    y <- matrix(
+      data = unlist(strsplit(x, "\\|")),
+      ncol = 2,
+      byrow = TRUE
+    )
+    z <- vapply(y[, 2], list_switch, character(1), mdb_col_types)
+    names(z) <- y[, 1]
+    spec <- readr::as.col_spec(z)
+    if (isTRUE(condense)) {
+      return(readr::cols_condense(spec))
+    }
+    return(spec)
+  }
+
   table_vec <- if (is.null(table)) {
     NULL
   } else {

@@ -6,10 +6,10 @@
 #'
 #' @param file Path to the Microsoft Access file.
 #' @param table Name of the table, list with `mdb_tables()`.
-#' @param output Path or connection to write to. Passed to the `stdout` argument
-#'   of [system2()]. Possible values are `""`, to the R console (the default),
-#'   `NULL` or `FALSE` (discard output), `TRUE` (capture the output in a
-#'   character vector) or a character string naming a file.
+#' @param output Controls where output is sent. `TRUE` (the default) returns
+#'   the output as a character vector. `""` prints to the R console and returns
+#'   invisibly. `NULL` or `FALSE` discards the output. A character string is
+#'   treated as a file path to write to, returning the path invisibly.
 #' @param delim Delimiter used to separate values.
 #' @param quote Single character used to quote strings. Defaults to `"`.
 #' @param quote_escape The type of escaping to use for quoted values, one of

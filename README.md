@@ -101,10 +101,10 @@ read_mdb(ex, "Airports")
 #> # ℹ 1,448 more rows
 ```
 
-The DDL for a table can be retrieved with `mdb_ddl()`.
+The DDL for a table can be retrieved with `mdb_schema(mode = "ddl")`.
 
 ``` r
-mdb_ddl(ex, "Airports")
+mdb_schema(ex, "Airports", mode = "ddl")
 #> [Airports]
 #> -- That file uses encoding UTF-8
 #> 
@@ -121,23 +121,22 @@ mdb_ddl(ex, "Airports")
 #> );
 ```
 
-Column types are returned as a tibble with Access type names and R type
-codes (`c` = character, `i` = integer, `d` = double, `l` = logical, `T` =
-datetime).
+Column types are returned as a [readr col spec](https://readr.tidyverse.org/reference/cols.html)
+(requires the **readr** package). Use `condense = TRUE` to collapse columns
+sharing a type.
 
 ``` r
 mdb_schema(ex, "Airports")
-#> # A tibble: 8 × 3
-#>   col_name access_type  r_type
-#>   <chr>    <chr>        <chr> 
-#> 1 faa      Text         c     
-#> 2 name     Text         c     
-#> 3 lat      Double       d     
-#> 4 lon      Double       d     
-#> 5 alt      Long Integer i     
-#> 6 tz       Integer      i     
-#> 7 dst      Text         c     
-#> 8 tzone    Text         c
+#> cols(
+#>   faa = col_character(),
+#>   name = col_character(),
+#>   lat = col_double(),
+#>   lon = col_double(),
+#>   alt = col_integer(),
+#>   tz = col_integer(),
+#>   dst = col_character(),
+#>   tzone = col_character()
+#> )
 ```
 
 <!-- refs: start -->

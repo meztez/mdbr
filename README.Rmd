@@ -76,15 +76,15 @@ Tables are read directly into R as a tibble with automatic type coercion.
 read_mdb(ex, "Airports")
 ```
 
-The DDL for a table can be retrieved with `mdb_ddl()`.
+The DDL for a table can be retrieved with `mdb_schema(mode = "ddl")`.
 
 ```{r ddl}
-mdb_ddl(ex, "Airports")
+mdb_schema(ex, "Airports", mode = "ddl")
 ```
 
-Column types are returned as a tibble with Access type names and R type
-codes (`c` = character, `i` = integer, `d` = double, `l` = logical, `T` =
-datetime).
+Column types are returned as a [readr col spec](https://readr.tidyverse.org/reference/cols.html)
+(requires the **readr** package). Use `condense = TRUE` to collapse columns
+sharing a type.
 
 ```{r schema}
 mdb_schema(ex, "Airports")

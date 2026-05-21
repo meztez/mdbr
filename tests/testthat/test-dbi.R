@@ -180,9 +180,10 @@ test_that("mdb_ver and mdb_schema work without system CLI", {
   file_ver <- mdb_ver(sample_mdb)
   expect_identical(file_ver, "JET3")
 
-  ddl <- mdb_ddl(
+  ddl <- mdb_schema(
     sample_mdb,
     table = "Products",
+    mode = "ddl",
     backend = "postgres",
     as_list = FALSE
   )
@@ -269,19 +270,19 @@ test_that("mdb_queries mirrors CLI placeholder for unsupported saved-query layou
   expect_identical(sql, "SELECT  FROM  ")
 })
 
-test_that("mdb_ddl selected table output is mdblist by default", {
+test_that("mdb_schema selected table output is mdblist by default", {
   skip_if_not(file.exists(sample_mdb))
 
-  ddl <- mdb_ddl(sample_mdb, table = "Products")
+  ddl <- mdb_schema(sample_mdb, table = "Products", mode = "ddl")
   expect_s3_class(ddl, "mdblist")
   expect_identical(names(ddl), "Products")
   expect_true(grepl("CREATE TABLE", ddl[["Products"]], fixed = TRUE))
 })
 
-test_that("mdb_ddl can return named mdblist for selected tables", {
+test_that("mdb_schema can return named mdblist for selected tables", {
   skip_if_not(file.exists(sample_mdb))
 
-  ddl <- mdb_ddl(sample_mdb, table = c("Products", "Orders"), as_list = TRUE)
+  ddl <- mdb_schema(sample_mdb, table = c("Products", "Orders"), mode = "ddl", as_list = TRUE)
   expect_s3_class(ddl, "mdblist")
   expect_true(all(c("Products", "Orders") %in% names(ddl)))
   expect_true(all(vapply(
@@ -291,10 +292,10 @@ test_that("mdb_ddl can return named mdblist for selected tables", {
   )))
 })
 
-test_that("mdb_ddl with no table returns mdblist by default", {
+test_that("mdb_schema with no table returns mdblist by default", {
   skip_if_not(file.exists(sample_mdb))
 
-  ddl <- mdb_ddl(sample_mdb)
+  ddl <- mdb_schema(sample_mdb, mode = "ddl")
   expect_s3_class(ddl, "mdblist")
   expect_true(length(ddl) > 0)
   expect_true("Products" %in% names(ddl))
@@ -304,7 +305,7 @@ test_that("mdb_ddl with no table returns mdblist by default", {
 test_that("mdb_schema output does not include legacy banner", {
   skip_if_not(file.exists(sample_mdb))
 
-  ddl <- mdb_ddl(sample_mdb, table = "Products", as_list = FALSE)
+  ddl <- mdb_schema(sample_mdb, table = "Products", mode = "ddl", as_list = FALSE)
   expect_false(grepl(
     "MDB Tools - A library for reading MS Access database files",
     ddl,
@@ -425,11 +426,11 @@ test_that("test_script.sh command set is covered by mimic wrappers", {
   expect_type(prop_mdb[["Umsätze"]], "list")
   expect_gt(length(prop_mdb[["Umsätze"]]), 0L)
 
-  schema_accdb <- mdb_ddl(sample_accdb, as_list = FALSE)
+  schema_accdb <- mdb_schema(sample_accdb, mode = "ddl", as_list = FALSE)
   expect_type(schema_accdb, "character")
   expect_true(grepl("CREATE TABLE", schema_accdb, fixed = TRUE))
 
-  schema_mdb <- mdb_ddl(sample_mdb, as_list = FALSE)
+  schema_mdb <- mdb_schema(sample_mdb, mode = "ddl", as_list = FALSE)
   expect_type(schema_mdb, "character")
   expect_true(grepl("CREATE TABLE", schema_mdb, fixed = TRUE))
 
