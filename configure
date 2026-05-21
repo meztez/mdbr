@@ -11,7 +11,7 @@ check_func() {
     _func=$1
     _upper=$(echo "$_func" | tr '[:lower:]' '[:upper:]')
     printf "[mdbr] configure: checking for %s... " "$_func"
-    if ${CC} ${CPPFLAGS} ${CFLAGS} -o _conftest _conftest.c 2>/dev/null; then
+    if ${CC} ${CPPFLAGS} ${CFLAGS} -Werror=implicit-function-declaration -o _conftest _conftest.c 2>/dev/null; then
         echo "yes"
         eval "HAVE_${_upper}_DEF=-DHAVE_${_upper}"
     else
