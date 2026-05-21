@@ -126,13 +126,23 @@ mdb-schema -T Airports nycflights13.mdb
 #> );
 ```
 
-This information is returned as a named character vector of type codes
-(`c` = character, `i` = integer, `d` = double, `l` = logical, `T` =
+This information is returned as a tibble with Access type names and R type
+codes (`c` = character, `i` = integer, `d` = double, `l` = logical, `T` =
 datetime).
 
 ``` r
-mdb_schema(ex, "Airports", condense = TRUE)
-#> [1] "c" "d" "i"
+mdb_schema(ex, "Airports")
+#> # A tibble: 8 × 3
+#>   col_name access_type  r_type
+#>   <chr>    <chr>        <chr> 
+#> 1 faa      Text         c     
+#> 2 name     Text         c     
+#> 3 lat      Double       d     
+#> 4 lon      Double       d     
+#> 5 alt      Long Integer i     
+#> 6 tz       Integer      i     
+#> 7 dst      Text         c     
+#> 8 tzone    Text         c
 ```
 
 <!-- refs: start -->
