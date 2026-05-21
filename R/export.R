@@ -29,28 +29,36 @@
 #' export_mdb(mdb_example(), "Airlines", output = TRUE)
 #' }
 #' @export
-export_mdb <- function(file, table, output = TRUE, delim = ",",
-                       quote = "\"", quote_escape = "double", col_names = TRUE,
-                       eol = "\n", date_format = "%Y-%m-%d %H:%M:%S") {
+export_mdb <- function(
+  file,
+  table,
+  output = TRUE,
+  delim = ",",
+  quote = "\"",
+  quote_escape = "double",
+  col_names = TRUE,
+  eol = "\n",
+  date_format = "%Y-%m-%d %H:%M:%S"
+) {
   if (missing(table)) {
     stop("Must define a table name, list with mdb_tables()", call. = FALSE)
   }
   quote_escape <- switch(
     standardize_escape(quote_escape),
-    double    = "\"",
+    double = "\"",
     backslash = "\\",
-    none      = ""
+    none = ""
   )
   escape_arg <- if (nzchar(quote_escape)) quote_escape else NULL
 
   out <- mdb_export(
-    path            = file,
-    table           = table,
-    no_header       = !col_names,
-    delimiter       = delim,
-    row_delimiter   = eol,
-    quote           = quote,
-    escape          = escape_arg,
+    path = file,
+    table = table,
+    no_header = !col_names,
+    delimiter = delim,
+    row_delimiter = eol,
+    quote = quote,
+    escape = escape_arg,
     datetime_format = date_format
   )
 

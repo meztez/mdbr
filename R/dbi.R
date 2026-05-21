@@ -40,13 +40,16 @@ methods::setMethod(
   "dbCanConnect",
   "MdbDriver",
   function(drv, ...) {
-    tryCatch({
-      conn <- DBI::dbConnect(drv, ...)
-      on.exit(DBI::dbDisconnect(conn), add = TRUE)
-      TRUE
-    }, error = function(e) {
-      FALSE
-    })
+    tryCatch(
+      {
+        conn <- DBI::dbConnect(drv, ...)
+        on.exit(DBI::dbDisconnect(conn), add = TRUE)
+        TRUE
+      },
+      error = function(e) {
+        FALSE
+      }
+    )
   }
 )
 
@@ -112,13 +115,20 @@ methods::setMethod(
     .require_valid_connection(conn)
 
     if (!is.null(prefix)) {
-      return(data.frame(table = I(list()), is_prefix = logical(0), stringsAsFactors = FALSE))
+      return(data.frame(
+        table = I(list()),
+        is_prefix = logical(0),
+        stringsAsFactors = FALSE
+      ))
     }
 
     tables <- DBI::dbListTables(conn)
     queries <- .native_list_queries(conn@path)
     object_names <- c(tables, queries)
-    object_types <- c(rep("table", length(tables)), rep("query", length(queries)))
+    object_types <- c(
+      rep("table", length(tables)),
+      rep("query", length(queries))
+    )
 
     data.frame(
       table = I(as.list(object_names)),
@@ -230,7 +240,10 @@ methods::setMethod(
   c("MdbConnection", "character"),
   function(conn, statement, ...) {
     .require_valid_connection(conn)
-    stop("`dbExecute()` is not supported for MDB/ACCDB in read-only mode.", call. = FALSE)
+    stop(
+      "`dbExecute()` is not supported for MDB/ACCDB in read-only mode.",
+      call. = FALSE
+    )
   }
 )
 

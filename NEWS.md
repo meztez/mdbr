@@ -17,15 +17,23 @@
   - `mdb_header()` — return a structural summary (version, tables, queries).
   - `mdb_hexdump()` — hexadecimal dump of MDB file bytes.
   - `mdb_import()` — stub (read-only; always errors with a clear message).
-  - `mdb_parsecsv()` — convert CSV to a C array source string.
   - `mdb_prop()` — retrieve MDB object properties.
   - `print.mdblist` — pretty-printer for `mdblist` objects.
+* **No external dependencies**: `readr` has been removed. `read_mdb()` now reads
+  tables directly via the bundled C library with automatic type coercion
+  (integer, double, logical, POSIXct for DateTime, character otherwise).
+* **`mdb_schema()`** now returns a named character vector of type codes
+  (`c`/`i`/`d`/`l`/`T`) instead of a `readr` col_spec object.
 * **Backward-compatible**: `read_mdb()`, `export_mdb()`, `mdb_tables()`,
-  `mdb_schema()`, and `mdb_example()` signatures are unchanged. Internally they
-  now use the bundled library instead of system `mdb-*` binaries.
+  `mdb_schema()`, and `mdb_example()` function signatures are unchanged.
 * `mdb_tables()` gains additional optional arguments (`system`, `type`,
   `show_type`, `as_text`, `single_column`, `delimiter`) matching the `mdb-tables`
   CLI surface.
+* **`read_mdb()`** now returns a `tibble`. The `col_types` and `...` arguments
+  are deprecated with a lifecycle warning; they had no effect with the native
+  read path.
+* **CI**: macOS and Windows are now part of the check matrix; no external
+  mdbtools install step is needed.
 * Bruno Tremblay (Boostao) added as co-author for the DBI interface and
   bundled mdbtools integration (originally developed in the `mdbtoolr` package).
 
