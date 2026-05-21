@@ -3,7 +3,7 @@ library(mdbr)
 
 test_that("tables can be read as data frames", {
   skip_on_cran()
-  skip_if_not(has_mdb_tools())
+  skip_if_not(is.loaded("mdbtoolr_version"))
   dat <- read_mdb(mdb_example(), "Flights", col_types = TRUE)
   expect_length(dat, 19)
   expect_s3_class(dat, "tbl")
@@ -14,7 +14,7 @@ test_that("tables can be read as data frames", {
 
 test_that("tables can be read in memory", {
   skip_on_cran()
-  skip_if_not(has_mdb_tools())
+  skip_if_not(is.loaded("mdbtoolr_version"))
   dat <- read_mdb(mdb_example(), "Flights", col_types = TRUE)
   expect_length(dat, 19)
   expect_s3_class(dat, "tbl")
@@ -25,12 +25,12 @@ test_that("tables can be read in memory", {
 
 test_that("reading errors without table name", {
   skip_on_cran()
-  skip_if_not(has_mdb_tools())
+  skip_if_not(is.loaded("mdbtoolr_version"))
   expect_error(read_mdb(mdb_example()))
 })
 
 test_that("reading error when console stdout", {
   skip_on_cran()
-  skip_if_not(has_mdb_tools())
+  skip_if_not(is.loaded("mdbtoolr_version"))
   expect_error(read_mdb(mdb_example(), "Flights", stdout = ""))
 })

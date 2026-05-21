@@ -14,15 +14,32 @@
 #' }
 #' @export
 mdb_schema <- function(file, table, condense = FALSE) {
-  check_mdb_tools()
   if (missing(table)) {
     stop("Must define a table name, list with mdb_tables()", call. = FALSE)
   }
-  x <- system2(
-    command = Sys.which("mdb-schema"),
-    args = c(shQuote(file), paste("-T", shQuote(table))),
-    stdout = TRUE
+  # Use the native DDL generator then parse the column definitions from it
+  x <- tryCatch(
+    .native_print_schema(
+      path = .mdb_normalize_path(file),
+      table = as.character(table),
+      backend = "access",
+      namespace = NULL,
+      export_options = .mdb_schema_options()
+    ),
+    error = function(e) {
+      # Fallback to system mdb-schema if native call fails
+      check_mdb_tools()
+      system2(
+        command = Sys.which("mdb-schema"),
+        args = c(shQuote(file), paste("-T", shQuote(table))),
+        stdout = TRUE
+      )
+    }
   )
+  # x may be a named character vector (from native) or a character vector of lines
+  if (!is.null(names(x))) {
+    x <- strsplit(x[[1]], "\n")[[1]]
+  }
   x <- grep("^\t", x, value = TRUE)
   x <- gsub("\t{3}", "|", x)
   x <- gsub("^\t", "", x)

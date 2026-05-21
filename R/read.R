@@ -18,7 +18,6 @@
 #' }
 #' @export
 read_mdb <- function(file, table, col_names = TRUE, col_types = NULL, ...) {
-  check_mdb_tools()
   if (missing(table)) {
     stop("Must define a table name, list with mdb_tables()", call. = FALSE)
   }
