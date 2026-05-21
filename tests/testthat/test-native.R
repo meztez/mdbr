@@ -18,11 +18,11 @@ test_that("mdb_tables type='query' returns character vector", {
   expect_type(q, "character")
 })
 
-test_that("mdb_tables as_text=TRUE returns scalar string", {
+test_that("mdb_tables returns a character vector", {
   skip_if_not(is.loaded("mdbr_version"))
-  txt <- mdb_tables(mdb_example(), as_text = TRUE)
+  txt <- mdb_tables(mdb_example())
   expect_type(txt, "character")
-  expect_length(txt, 1L)
+  expect_gte(length(txt), 1L)
 })
 
 test_that("mdb_ver returns version string from native library", {

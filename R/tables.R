@@ -1,21 +1,15 @@
 #' List tables in a Microsoft Access database
 #'
 #' @param file Path to the Microsoft Access file.
-#' @param system Logical; include system (`MSys*`) tables.
-#' @param single_column Logical; use newline delimiter (equivalent to `-1`).
-#' @param delimiter Delimiter for `as_text` mode.
+#' @param system Logical; include system (`MSys*`) tables. Equivalent to `-S`.
 #' @param type Object type to list: `"table"` (default), `"query"`,
-#'   `"systable"`, `"any"`, or `"all"`.
-#' @param show_type Logical; prefix each entry with its type.
-#' @param as_text Logical; return a single delimited string instead of a vector.
-#' @return A character vector of table names, or a scalar string when
-#'   `as_text = TRUE`.
+#'   `"systable"`, `"any"`, or `"all"`. Equivalent to `-t`.
+#' @param show_type Logical; prefix each entry with its type. Equivalent to `-T`.
+#' @return A character vector of table names.
 #' @export
 mdb_tables <- function(
   file,
   system = FALSE,
-  single_column = FALSE,
-  delimiter = NULL,
   type = c(
     "table",
     "query",
@@ -30,8 +24,7 @@ mdb_tables <- function(
     "relationship",
     "dbprop"
   ),
-  show_type = FALSE,
-  as_text = FALSE
+  show_type = FALSE
 ) {
   type <- match.arg(type)
   path <- .mdb_normalize_path(file)
@@ -71,16 +64,6 @@ mdb_tables <- function(
     )
   }
 
-  delim <- if (!is.null(delimiter)) {
-    delimiter
-  } else if (isTRUE(single_column)) {
-    "\n"
-  } else {
-    "\t"
-  }
 
-  if (isTRUE(as_text)) {
-    return(paste(out, collapse = delim))
-  }
   out
 }
