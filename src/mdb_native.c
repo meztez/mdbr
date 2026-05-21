@@ -652,7 +652,7 @@ SEXP mdbr_print_schema(SEXP path_sexp, SEXP table_sexp, SEXP backend_sexp, SEXP 
 
     if (export_options & MDB_SHEXP_RELATIONS) {
       g_string_append(ddl, "-- CREATE Relationships ...\n");
-      g_string_append(ddl, "-- relationships export is not yet implemented in mdbtoolr library mode\n");
+      g_string_append(ddl, "-- relationships export is not yet implemented in mdbr library mode\n");
     }
 
     g_string_append(ddl, "\n");

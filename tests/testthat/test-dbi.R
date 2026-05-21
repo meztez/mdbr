@@ -22,12 +22,12 @@ test_that("driver constructor returns DBIDriver", {
 })
 
 test_that("native symbols are loaded", {
-  expect_true(is.loaded("mdbtoolr_list_tables"))
-  expect_true(is.loaded("mdbtoolr_list_queries"))
-  expect_true(is.loaded("mdbtoolr_list_fields"))
-  expect_true(is.loaded("mdbtoolr_read_table"))
-  expect_true(is.loaded("mdbtoolr_run_query"))
-  expect_true(is.loaded("mdbtoolr_get_query_sql"))
+  expect_true(is.loaded("mdbr_list_tables"))
+  expect_true(is.loaded("mdbr_list_queries"))
+  expect_true(is.loaded("mdbr_list_fields"))
+  expect_true(is.loaded("mdbr_read_table"))
+  expect_true(is.loaded("mdbr_run_query"))
+  expect_true(is.loaded("mdbr_get_query_sql"))
 })
 
 test_that("character dbConnect dispatch works for accdb path", {
