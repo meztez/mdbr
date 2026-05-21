@@ -2,6 +2,7 @@
 set -eu
 
 # Keep source tree clean from generated install/build artifacts.
+rm -f ./src/Makevars
 rm -rf ./inst/mdbtools/bin
 rm -rf ./src/.mdbtools-build ./src/.mdbtools-shims
 rm -f ./src/*.o ./src/*.so ./src/*.dll ./src/*.dylib ./src/*.a
