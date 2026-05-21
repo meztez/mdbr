@@ -101,32 +101,26 @@ read_mdb(ex, "Airports")
 #> # ℹ 1,448 more rows
 ```
 
-To inspect the Access column types for a table:
+The DDL for a table can be retrieved with `mdb_ddl()`.
 
-``` bash
-mdb-schema -T Airports nycflights13.mdb
-#> -- ----------------------------------------------------------
-#> -- MDB Tools - A library for reading MS Access database files
-#> -- Copyright (C) 2000-2011 Brian Bruns and others.
-#> -- Files in libmdb are licensed under LGPL and the utilities under
-#> -- the GPL, see COPYING.LIB and COPYING files respectively.
-#> -- Check out http://mdbtools.sourceforge.net
-#> -- ----------------------------------------------------------
+``` r
+mdb_ddl(ex, "Airports")$Airports |> cat()
+#> -- That file uses encoding UTF-8
 #> 
 #> CREATE TABLE [Airports]
-#> (
-#>     [faa]            Text (510), 
-#>     [name]           Text (510), 
-#>     [lat]            Double, 
-#>     [lon]            Double, 
-#>     [alt]            Long Integer, 
-#>     [tz]             Integer, 
-#>     [dst]            Text (510), 
-#>     [tzone]          Text (510)
+#>  (
+#> 	[faa]			Text (255),
+#> 	[name]			Text (255),
+#> 	[lat]			Double,
+#> 	[lon]			Double,
+#> 	[alt]			Long Integer,
+#> 	[tz]			Integer,
+#> 	[dst]			Text (255),
+#> 	[tzone]			Text (255)
 #> );
 ```
 
-This information is returned as a tibble with Access type names and R type
+Column types are returned as a tibble with Access type names and R type
 codes (`c` = character, `i` = integer, `d` = double, `l` = logical, `T` =
 datetime).
 
