@@ -80,7 +80,8 @@ cat(string, sep = "\n")
 #> 'YV'|'Mesa Airlines Inc.'
 ```
 
-Tables can be easily converted to a temporary file and read immediately.
+Tables are read directly into R as a tibble with automatic type
+coercion.
 
 ``` r
 read_mdb(ex, "Airports")
@@ -100,10 +101,7 @@ read_mdb(ex, "Airports")
 #> # ℹ 1,448 more rows
 ```
 
-When reading a converted table, you might need to know what types of
-data to expect from each column.
-
-The schema of database tables describes the column types.
+To inspect the Access column types for a table:
 
 ``` bash
 mdb-schema -T Airports nycflights13.mdb

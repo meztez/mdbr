@@ -70,16 +70,13 @@ string <- export_mdb(ex, "Airlines", output = TRUE, delim = "|", quote = "'")
 cat(string, sep = "\n")
 ```
 
-Tables can be easily converted to a temporary file and read immediately.
+Tables are read directly into R as a tibble with automatic type coercion.
 
 ```{r read, message=FALSE}
 read_mdb(ex, "Airports")
 ```
 
-When reading a converted table, you might need to know what types of data to
-expect from each column. 
-
-The schema of database tables describes the column types.
+To inspect the Access column types for a table:
 
 ``` bash
 mdb-schema -T Airports nycflights13.mdb
