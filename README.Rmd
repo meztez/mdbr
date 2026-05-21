@@ -79,7 +79,7 @@ read_mdb(ex, "Airports")
 The DDL for a table can be retrieved with `mdb_ddl()`.
 
 ```{r ddl}
-mdb_ddl(ex, "Airports")$Airports |> cat()
+mdb_ddl(ex, "Airports")
 ```
 
 Column types are returned as a tibble with Access type names and R type

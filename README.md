@@ -104,7 +104,8 @@ read_mdb(ex, "Airports")
 The DDL for a table can be retrieved with `mdb_ddl()`.
 
 ``` r
-mdb_ddl(ex, "Airports")$Airports |> cat()
+mdb_ddl(ex, "Airports")
+#> [Airports]
 #> -- That file uses encoding UTF-8
 #> 
 #> CREATE TABLE [Airports]
