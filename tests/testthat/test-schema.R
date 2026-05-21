@@ -1,21 +1,16 @@
 library(testthat)
 library(mdbr)
 
-test_that("schema returns named character vector of type codes", {
+test_that("schema returns a tibble with expected columns", {
   skip_on_cran()
   skip_if_not(is.loaded("mdbr_version"))
   dat <- mdb_schema(mdb_example(), "Flights")
-  expect_type(dat, "character")
-  expect_named(dat)
-  expect_length(dat, 19L)
-})
-
-test_that("schema condense returns unique type codes", {
-  skip_on_cran()
-  skip_if_not(is.loaded("mdbr_version"))
-  a <- mdb_schema(mdb_example(), "Flights")
-  b <- mdb_schema(mdb_example(), "Flights", condense = TRUE)
-  expect_gt(length(a), length(b))
+  expect_s3_class(dat, "tbl_df")
+  expect_named(dat, c("col_name", "access_type", "r_type"))
+  expect_equal(nrow(dat), 19L)
+  expect_type(dat$col_name, "character")
+  expect_type(dat$access_type, "character")
+  expect_type(dat$r_type, "character")
 })
 
 test_that("schema errors without table", {

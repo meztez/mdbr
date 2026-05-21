@@ -377,6 +377,64 @@ SEXP mdbr_list_queries(SEXP path_sexp) {
   return out;
 }
 
+/* mdbr_list_objects: list catalog entry names by type.
+ *
+ * obj_type_r values (R-side conventions):
+ *   -1  all entries (MDB_ANY)
+ *   -2  all non-system entries
+ *   -3  system tables only  (MDB_TABLE + system flag)
+ *    1  user tables only    (MDB_TABLE + !system flag)
+ *   other >= 0  match entry->object_type directly (MDB_QUERY=5, MDB_FORM=0, etc.)
+ */
+SEXP mdbr_list_objects(SEXP path_sexp, SEXP type_sexp) {
+  const char *path = scalar_char(path_sexp, "path");
+  int obj_type_r = asInteger(type_sexp);
+  MdbHandle *mdb = NULL;
+  SEXP out = R_NilValue;
+  unsigned int i;
+  int n, j;
+
+  mdb = mdb_open(path, MDB_NOFLAGS);
+  if (mdb == NULL) {
+    Rf_error("Failed to open MDB/ACCDB file: %s", path);
+  }
+
+  if (!mdb_read_catalog(mdb, MDB_ANY)) {
+    out = PROTECT(Rf_allocVector(STRSXP, 0));
+    mdb_close(mdb);
+    UNPROTECT(1);
+    return out;
+  }
+
+#define MATCHES_OBJ(entry) ( \
+    (obj_type_r == -1) ? 1 : \
+    (obj_type_r == -2) ? !mdb_is_system_table(entry) : \
+    (obj_type_r == -3) ? mdb_is_system_table(entry) : \
+    (obj_type_r ==  1) ? mdb_is_user_table(entry) : \
+    ((int)(entry)->object_type == obj_type_r) )
+
+  n = 0;
+  for (i = 0; i < mdb->num_catalog; i++) {
+    MdbCatalogEntry *entry = (MdbCatalogEntry *) g_ptr_array_index(mdb->catalog, i);
+    if (entry != NULL && MATCHES_OBJ(entry)) n++;
+  }
+
+  out = PROTECT(Rf_allocVector(STRSXP, (R_xlen_t) n));
+  j = 0;
+  for (i = 0; i < mdb->num_catalog; i++) {
+    MdbCatalogEntry *entry = (MdbCatalogEntry *) g_ptr_array_index(mdb->catalog, i);
+    if (entry != NULL && MATCHES_OBJ(entry)) {
+      SET_STRING_ELT(out, j++, Rf_mkChar(entry->object_name));
+    }
+  }
+
+#undef MATCHES_OBJ
+
+  mdb_close(mdb);
+  UNPROTECT(1);
+  return out;
+}
+
 SEXP mdbr_get_query_sql(SEXP path_sexp, SEXP query_name_sexp) {
   const char *path = scalar_char(path_sexp, "path");
   const char *query_name = scalar_char(query_name_sexp, "query_name");

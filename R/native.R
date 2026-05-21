@@ -29,6 +29,10 @@
   .Call("mdbr_list_queries", PACKAGE = "mdbr", path)
 }
 
+.native_list_objects <- function(path, type_int) {
+  .Call("mdbr_list_objects", PACKAGE = "mdbr", path, as.integer(type_int))
+}
+
 .native_list_fields <- function(path, table) {
   .Call("mdbr_list_fields", PACKAGE = "mdbr", path, table)
 }

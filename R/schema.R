@@ -1,20 +1,16 @@
-#' Column type codes for a table
-#'
-#' Returns a named character vector mapping column names to type codes:
-#' `"c"` = character, `"i"` = integer, `"d"` = double,
-#' `"l"` = logical, `"T"` = datetime (POSIXct).
+#' Column types for a table
 #'
 #' @param file Path to the Microsoft Access file.
 #' @param table Name of the table, list with [mdb_tables()].
-#' @param condense When `TRUE`, return only the unique type codes present
-#'   in the table rather than one entry per column.
-#' @return A named character vector of type codes.
+#' @return A [tibble::tibble()] with columns `col_name` (character),
+#'   `access_type` (character), and `r_type` (character, one of `"c"`,
+#'   `"i"`, `"d"`, `"l"`, `"T"`).
 #' @examples
 #' \dontrun{
 #' mdb_schema(mdb_example(), "Flights")
 #' }
 #' @export
-mdb_schema <- function(file, table, condense = FALSE) {
+mdb_schema <- function(file, table) {
   if (missing(table)) {
     stop("Must define a table name, list with mdb_tables()", call. = FALSE)
   }
@@ -38,9 +34,11 @@ mdb_schema <- function(file, table, condense = FALSE) {
     ncol = 2,
     byrow = TRUE
   )
-  z <- vapply(y[, 2], list_switch, character(1), mdb_col_types)
-  names(z) <- y[, 1]
-  if (isTRUE(condense)) unique(z) else z
+  tibble::tibble(
+    col_name = y[, 1],
+    access_type = y[, 2],
+    r_type = vapply(y[, 2], list_switch, character(1), mdb_col_types)
+  )
 }
 
 # types from mdbtools/src/libmdb/backend.c
