@@ -18,7 +18,9 @@ URL: https://k5cents.github.io/mdbr/, https://github.com/k5cents/mdbr
 BugReports: https://github.com/k5cents/mdbr/issues
 Imports:
     DBI,
+    lifecycle,
     methods,
+    tibble,
     utils,
     jsonlite
 Suggests:
