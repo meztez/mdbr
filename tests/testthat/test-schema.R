@@ -1,23 +1,25 @@
 library(testthat)
 library(mdbr)
 
-test_that("schema returns col spec", {
+test_that("schema returns named character vector of type codes", {
   skip_on_cran()
-  skip_if_not(has_mdb_tools())
+  skip_if_not(is.loaded("mdbr_version"))
   dat <- mdb_schema(mdb_example(), "Flights")
-  expect_s3_class(dat, "col_spec")
+  expect_type(dat, "character")
+  expect_named(dat)
+  expect_length(dat, 19L)
 })
 
-test_that("schema can be condensed", {
+test_that("schema condense returns unique type codes", {
   skip_on_cran()
-  skip_if_not(has_mdb_tools())
+  skip_if_not(is.loaded("mdbr_version"))
   a <- mdb_schema(mdb_example(), "Flights")
   b <- mdb_schema(mdb_example(), "Flights", condense = TRUE)
-  expect_gt(length(a$cols), length(b$cols))
+  expect_gt(length(a), length(b))
 })
 
 test_that("schema errors without table", {
   skip_on_cran()
-  skip_if_not(has_mdb_tools())
+  skip_if_not(is.loaded("mdbr_version"))
   expect_error(mdb_schema(mdb_example()))
 })

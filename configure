@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+
+echo "[mdbr] configure: no-op (using vendored libmdb sources via src/Makevars)"
+exit 0
