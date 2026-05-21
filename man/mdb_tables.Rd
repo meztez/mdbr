@@ -18,12 +18,14 @@ mdb_tables(
 \item{system}{Logical; include system (\verb{MSys*}) tables. Equivalent to \code{-S}.}
 
 \item{type}{Object type to list: \code{"table"} (default), \code{"query"},
-\code{"systable"}, \code{"any"}, or \code{"all"}. Equivalent to \code{-t}.}
+\code{"systable"}, \code{"any"}, \code{"all"}, \code{"form"}, \code{"macro"}, \code{"report"},
+\code{"linkedtable"}, \code{"module"}, \code{"relationship"}, or \code{"dbprop"}.
+Equivalent to \code{-t}.}
 
 \item{show_type}{Logical; prefix each entry with its type. Equivalent to \code{-T}.}
 }
 \value{
-A character vector of table names.
+A character vector of object names.
 }
 \description{
 List tables in a Microsoft Access database

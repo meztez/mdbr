@@ -2,25 +2,22 @@
 % Please edit documentation in R/schema.R
 \name{mdb_schema}
 \alias{mdb_schema}
-\title{Column type codes for a table}
+\title{Column types for a table}
 \usage{
-mdb_schema(file, table, condense = FALSE)
+mdb_schema(file, table)
 }
 \arguments{
 \item{file}{Path to the Microsoft Access file.}
 
 \item{table}{Name of the table, list with \code{\link[=mdb_tables]{mdb_tables()}}.}
-
-\item{condense}{When \code{TRUE}, return only the unique type codes present
-in the table rather than one entry per column.}
 }
 \value{
-A named character vector of type codes.
+A \code{\link[tibble:tibble]{tibble::tibble()}} with columns \code{col_name} (character),
+\code{access_type} (character), and \code{r_type} (character, one of \code{"c"},
+\code{"i"}, \code{"d"}, \code{"l"}, \code{"T"}).
 }
 \description{
-Returns a named character vector mapping column names to type codes:
-\code{"c"} = character, \code{"i"} = integer, \code{"d"} = double,
-\code{"l"} = logical, \code{"T"} = datetime (POSIXct).
+Column types for a table
 }
 \examples{
 \dontrun{
