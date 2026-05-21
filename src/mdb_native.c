@@ -844,8 +844,9 @@ SEXP mdbr_prop_dump(SEXP path_sexp, SEXP name_sexp, SEXP propcol_sexp) {
   return res;
 }
 
-SEXP mdbr_list_tables(SEXP path_sexp) {
+SEXP mdbr_list_tables(SEXP path_sexp, SEXP include_system_sexp) {
   const char *path = scalar_char(path_sexp, "path");
+  int include_system = asLogical(include_system_sexp);
   MdbHandle *mdb = NULL;
   GPtrArray *catalog = NULL;
   SEXP out = R_NilValue;
@@ -865,18 +866,18 @@ SEXP mdbr_list_tables(SEXP path_sexp) {
     return out;
   }
 
-  /* Count user tables first (excludes linked-table fragments and system tables). */
-  int n_user = 0;
+  /* Count matching tables. */
+  int n = 0;
   for (i = 0; i < (int) catalog->len; i++) {
     MdbCatalogEntry *entry = (MdbCatalogEntry *) g_ptr_array_index(catalog, i);
-    if (mdb_is_user_table(entry)) n_user++;
+    if (include_system ? mdb_is_system_table(entry) : mdb_is_user_table(entry)) n++;
   }
 
-  out = PROTECT(Rf_allocVector(STRSXP, (R_xlen_t) n_user));
+  out = PROTECT(Rf_allocVector(STRSXP, (R_xlen_t) n));
   int j = 0;
   for (i = 0; i < (int) catalog->len; i++) {
     MdbCatalogEntry *entry = (MdbCatalogEntry *) g_ptr_array_index(catalog, i);
-    if (mdb_is_user_table(entry)) {
+    if (include_system ? mdb_is_system_table(entry) : mdb_is_user_table(entry)) {
       SET_STRING_ELT(out, j++, Rf_mkChar(entry->object_name));
     }
   }

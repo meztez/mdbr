@@ -35,22 +35,18 @@ mdb_tables <- function(
 ) {
   type <- match.arg(type)
   path <- .mdb_normalize_path(file)
-  user_tables <- .native_list_tables(path)
+  need_sys <- isTRUE(system) || type %in% c("systable", "all", "any")
+  user_tables <- .native_list_tables(path, system = FALSE)
+  sys_tables  <- if (need_sys) .native_list_tables(path, system = TRUE) else character(0)
   queries     <- .native_list_queries(path)
 
   out <- switch(
     type,
-    table   = user_tables,
-    query   = queries,
-    systable = {
-      warning(
-        "System tables are not accessible in library-only mode; returning empty result.",
-        call. = FALSE
-      )
-      character(0)
-    },
-    any = c(user_tables, queries),
-    all = c(user_tables, queries),
+    table    = c(user_tables, sys_tables),
+    query    = queries,
+    systable = sys_tables,
+    any      = c(user_tables, queries),
+    all      = c(user_tables, sys_tables, queries),
     {
       warning(
         sprintf(
@@ -67,7 +63,11 @@ mdb_tables <- function(
     out <- ifelse(
       out %in% queries,
       paste("query", out),
-      paste("table", out)
+      ifelse(
+        out %in% sys_tables,
+        paste("systable", out),
+        paste("table", out)
+      )
     )
   }
 

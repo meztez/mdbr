@@ -2,7 +2,7 @@
 #include <Rinternals.h>
 #include <R_ext/Rdynload.h>
 
-SEXP mdbr_list_tables(SEXP path_sexp);
+SEXP mdbr_list_tables(SEXP path_sexp, SEXP include_system_sexp);
 SEXP mdbr_list_queries(SEXP path_sexp);
 SEXP mdbr_list_fields(SEXP path_sexp, SEXP table_sexp);
 SEXP mdbr_table_num_rows(SEXP path_sexp, SEXP table_sexp);
@@ -15,7 +15,7 @@ SEXP mdbr_file_format(SEXP path_sexp);
 SEXP mdbr_prop_dump(SEXP path_sexp, SEXP name_sexp, SEXP propcol_sexp);
 
 static const R_CallMethodDef call_methods[] = {
-  {"mdbr_list_tables", (DL_FUNC) &mdbr_list_tables, 1},
+  {"mdbr_list_tables", (DL_FUNC) &mdbr_list_tables, 2},
   {"mdbr_list_queries", (DL_FUNC) &mdbr_list_queries, 1},
   {"mdbr_list_fields", (DL_FUNC) &mdbr_list_fields, 2},
   {"mdbr_table_num_rows", (DL_FUNC) &mdbr_table_num_rows, 2},

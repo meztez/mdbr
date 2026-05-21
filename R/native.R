@@ -21,8 +21,8 @@
   }
 }
 
-.native_list_tables <- function(path) {
-  .Call("mdbr_list_tables", PACKAGE = "mdbr", path)
+.native_list_tables <- function(path, system = FALSE) {
+  .Call("mdbr_list_tables", PACKAGE = "mdbr", path, system)
 }
 
 .native_list_queries <- function(path) {
