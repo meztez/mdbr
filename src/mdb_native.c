@@ -865,10 +865,20 @@ SEXP mdbr_list_tables(SEXP path_sexp) {
     return out;
   }
 
-  out = PROTECT(Rf_allocVector(STRSXP, (R_xlen_t) catalog->len));
+  /* Count user tables first (excludes linked-table fragments and system tables). */
+  int n_user = 0;
   for (i = 0; i < (int) catalog->len; i++) {
     MdbCatalogEntry *entry = (MdbCatalogEntry *) g_ptr_array_index(catalog, i);
-    SET_STRING_ELT(out, i, Rf_mkChar(entry->object_name));
+    if (mdb_is_user_table(entry)) n_user++;
+  }
+
+  out = PROTECT(Rf_allocVector(STRSXP, (R_xlen_t) n_user));
+  int j = 0;
+  for (i = 0; i < (int) catalog->len; i++) {
+    MdbCatalogEntry *entry = (MdbCatalogEntry *) g_ptr_array_index(catalog, i);
+    if (mdb_is_user_table(entry)) {
+      SET_STRING_ELT(out, j++, Rf_mkChar(entry->object_name));
+    }
   }
 
   mdb_close(mdb);

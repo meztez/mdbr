@@ -43,7 +43,7 @@ mdb_schema <- function(file, table, condense = FALSE) {
   x <- grep("^\t", x, value = TRUE)
   x <- gsub("\t{3}", "|", x)
   x <- gsub("^\t", "", x)
-  x <- gsub(",\\s$", "", x)
+  x <- gsub(",\\s*$", "", x)
   x <- gsub("\\[|\\]", "", x)
   x <- gsub("\\s\\(\\d+\\).*", "", x)
   x <- gsub("\\sNOT NULL", "", x)
