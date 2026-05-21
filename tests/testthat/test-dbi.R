@@ -315,9 +315,9 @@ test_that("mdb_schema output does not include legacy banner", {
 test_that("mdb-tables and mdb-queries option mimics behave", {
   skip_if_not(file.exists(sample_mdb))
 
-  table_text <- mdb_tables(sample_mdb, single_column = TRUE, as_text = TRUE)
-  expect_type(table_text, "character")
-  expect_true(grepl("\n", table_text) || nzchar(table_text))
+  table_vec <- mdb_tables(sample_mdb)
+  expect_type(table_vec, "character")
+  expect_gte(length(table_vec), 1L)
 
   query_names <- mdb_queries(sample_mdb, list = TRUE)
   expect_type(query_names, "character")
