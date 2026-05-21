@@ -4,6 +4,11 @@
 #' Access '.mdb' and '.accdb' files.
 #'
 #' @return A DBI driver for '.mdb' and '.accdb' files.
+#' @examples
+#' db <- mdb_example()
+#' conn <- DBI::dbConnect(mdb(), dbname = db)
+#' DBI::dbListTables(conn)
+#' DBI::dbDisconnect(conn)
 #' @useDynLib mdbr
 #' @importFrom methods new setClass setMethod
 #' @importFrom DBI dbConnect dbDisconnect dbIsValid dbListTables dbListObjects
