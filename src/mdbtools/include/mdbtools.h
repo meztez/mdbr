@@ -21,9 +21,6 @@
 #define MDBTOOLS_H_HAVE_ICONV_H 1
 #define MDBTOOLS_H_HAVE_XLOCALE_H 0
 
-#ifdef __cplusplus
-  extern "C" {
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -51,15 +48,6 @@
 #endif
 #endif
 
-/*
- * The R package build compiles vendored sources directly instead of using
- * mdbtools' autotools feature detection. Expose reallocf on macOS so
- * data.c does not compile its fallback implementation.
- */
-#if defined(__APPLE__) && !defined(HAVE_REALLOCF)
-#define HAVE_REALLOCF 1
-#endif
-
 #if defined(HAVE_ICONV) && !defined(ICONV_CONST)
 #if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || defined(WINDOWS)
 #define ICONV_CONST const
@@ -74,6 +62,10 @@
 
 #ifdef _WIN32
 #include <io.h>
+#endif
+
+#ifdef __cplusplus
+  extern "C" {
 #endif
 
 /** \addtogroup mdbtools
@@ -353,12 +345,31 @@ typedef struct {
 	struct S_MdbTableDef *relationships_table;
 	char        *relationships_values[5];
 	MdbStatistics *stats;
-	GHashTable *backends;
+    GHashTable *backends;
 #if defined(HAVE_ICONV)
 	iconv_t iconv_in;
 	iconv_t iconv_out;
 #else
     mdb_locale_t locale;
+#endif
+
+/*
+ * Keep mdbtools feature flags consistent across build paths.
+ * The direct R Makevars path does not run autotools config headers,
+ * but iconv.c gates behavior on HAVE_ICONV.
+ */
+#if MDBTOOLS_H_HAVE_ICONV_H && !defined(HAVE_ICONV)
+#if !defined(_WIN32) && !defined(WIN32) && !defined(_WIN64) && !defined(WIN64) && !defined(WINDOWS)
+#define HAVE_ICONV 1
+#endif
+#endif
+
+#if defined(HAVE_ICONV) && !defined(ICONV_CONST)
+#if defined(_WIN32) || defined(WIN32) || defined(_WIN64) || defined(WIN64) || defined(WINDOWS)
+#define ICONV_CONST const
+#else
+#define ICONV_CONST
+#endif
 #endif
 } MdbHandle; 
 

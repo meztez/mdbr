@@ -2,7 +2,7 @@
 set -eu
 
 # Pull a tagged mdbtools source tarball and unpack it into src/mdbtools.
-VERSION="${1:-1.0.0}"
+VERSION="${1:-1.0.1}"
 ROOT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 SRC_DIR="$ROOT_DIR/src"
 TARGET_DIR="$SRC_DIR/mdbtools"
@@ -37,13 +37,6 @@ prune_non_build_files() {
   rm -rf "$TARGET_DIR/.github"
   rm -rf "$TARGET_DIR/api_docx"
 
-  if [ -d "$TARGET_DIR/doc" ]; then
-    find "$TARGET_DIR/doc" -mindepth 1 -maxdepth 1 \
-      ! -name 'Makefile.in' \
-      ! -name 'Makefile.am' \
-      -exec rm -rf {} +
-  fi
-
   rm -f "$TARGET_DIR/.gitignore"
   rm -f "$TARGET_DIR/.gitlab-ci.yml"
   rm -f "$TARGET_DIR/appveyor.yml"
@@ -56,7 +49,34 @@ prune_non_build_files() {
   rm -f "$TARGET_DIR/TODO.md"
   rm -f "$TARGET_DIR/test_script.sh"
   rm -f "$TARGET_DIR/test_sql.sh"
-  rm -f "$TARGET_DIR/m4/lt~obsolete.m4"
+  # Remove autotools root files. Only COPYING and COPYING.LIB are kept.
+  rm -f "$TARGET_DIR/aclocal.m4"
+  rm -f "$TARGET_DIR/configure"
+  rm -f "$TARGET_DIR/configure.ac"
+  rm -f "$TARGET_DIR/Makefile.am"
+  rm -f "$TARGET_DIR/Makefile.in"
+  rm -f "$TARGET_DIR/libmdb.pc.in"
+  rm -f "$TARGET_DIR/libmdbsql.pc.in"
+  # Remove autotools infrastructure not needed for R's src/Makevars build.
+  rm -rf "$TARGET_DIR/m4"
+  rm -rf "$TARGET_DIR/build-aux"
+  rm -rf "$TARGET_DIR/doc"
+
+  # Remove autotools template/backup files from include/; only the
+  # generated .h headers are needed at compile time.
+  rm -f "$TARGET_DIR/include/Makefile.am"
+  rm -f "$TARGET_DIR/include/Makefile.in"
+  rm -f "$TARGET_DIR/include/mdbtools.h.in"
+  rm -f "$TARGET_DIR/include/mdbver.h.in"
+
+  # Remove source subtrees that are not compiled by src/Makevars.
+  # Only libmdb and sql are built; odbc requires unixODBC, fuzz requires
+  # a fuzzing engine, and util contains standalone CLI binaries -- none
+  # of these are relevant to the R package.
+  rm -rf "$TARGET_DIR/src/odbc"
+  rm -rf "$TARGET_DIR/src/fuzz"
+  rm -rf "$TARGET_DIR/src/util"
+  rm -rf "$TARGET_DIR/src/extras"
 }
 
 apply_vendor_diff_patches() {
@@ -93,12 +113,14 @@ apply_vendor_diff_patches() {
         continue
       fi
     else
-      if git apply --check --directory="$TARGET_DIR" "$patch_file" >/dev/null 2>&1; then
-        git apply --directory="$TARGET_DIR" "$patch_file"
+      git_root="$(git rev-parse --show-toplevel 2>/dev/null)" || git_root="$ROOT_DIR"
+      rel_target_dir="${TARGET_DIR#"${git_root}/"}"
+      if git apply --check --directory="$rel_target_dir" "$patch_file" >/dev/null 2>&1; then
+        git apply --directory="$rel_target_dir" "$patch_file"
         continue
       fi
 
-      if git apply --reverse --check --directory="$TARGET_DIR" "$patch_file" >/dev/null 2>&1; then
+      if git apply --reverse --check --directory="$rel_target_dir" "$patch_file" >/dev/null 2>&1; then
         echo "[mdbr] Patch ${patch_name} already present upstream; skipping"
         continue
       fi

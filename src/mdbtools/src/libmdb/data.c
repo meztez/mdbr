@@ -30,7 +30,7 @@ static char *mdb_date_to_string(MdbHandle *mdb, const char *fmt, void *buf, int 
 static size_t mdb_copy_ole(MdbHandle *mdb, void *dest, int start, int size);
 #endif
 
-#ifndef HAVE_REALLOCF
+#if !defined(HAVE_REALLOCF) && !defined(__APPLE__)
 static void *reallocf(void *ptr, size_t len) {
 	void *ptr2 = realloc(ptr, len);
 	if (!ptr2) {
