@@ -1,45 +1,31 @@
-#' Specification for columns in a table
+#' Column type codes for a table
 #'
-#' Used to determine the column types for [read_mdb()]. Passed to `col_types`
-#' in `readr::read_delim()`.
+#' Returns a named character vector mapping column names to type codes:
+#' `"c"` = character, `"i"` = integer, `"d"` = double,
+#' `"l"` = logical, `"T"` = datetime (POSIXct).
 #'
 #' @param file Path to the Microsoft Access file.
-#' @param table Name of the table, list with `mdb_tables()`.
-#' @param condense Should [readr::cols_condense()] be called on the spec?
-#' @return A readr cols specification list.
-#' @importFrom readr as.col_spec
+#' @param table Name of the table, list with [mdb_tables()].
+#' @param condense When `TRUE`, return only the unique type codes present
+#'   in the table rather than one entry per column.
+#' @return A named character vector of type codes.
 #' @examples
 #' \dontrun{
-#' mdb_schema(mdb_example(), "Flights", condense = TRUE)
+#' mdb_schema(mdb_example(), "Flights")
 #' }
 #' @export
 mdb_schema <- function(file, table, condense = FALSE) {
   if (missing(table)) {
     stop("Must define a table name, list with mdb_tables()", call. = FALSE)
   }
-  # Use the native DDL generator then parse the column definitions from it
-  x <- tryCatch(
-    .native_print_schema(
-      path = .mdb_normalize_path(file),
-      table = as.character(table),
-      backend = "access",
-      namespace = NULL,
-      export_options = .mdb_schema_options()
-    ),
-    error = function(e) {
-      # Fallback to system mdb-schema if native call fails
-      check_mdb_tools()
-      system2(
-        command = Sys.which("mdb-schema"),
-        args = c(shQuote(file), paste("-T", shQuote(table))),
-        stdout = TRUE
-      )
-    }
+  x <- .native_print_schema(
+    path = .mdb_normalize_path(file),
+    table = as.character(table),
+    backend = "access",
+    namespace = NULL,
+    export_options = .mdb_schema_options()
   )
-  # x may be a named character vector (from native) or a character vector of lines
-  if (!is.null(names(x))) {
-    x <- strsplit(x[[1]], "\n")[[1]]
-  }
+  x <- strsplit(x[[1]], "\n")[[1]]
   x <- grep("^\t", x, value = TRUE)
   x <- gsub("\t{3}", "|", x)
   x <- gsub("^\t", "", x)
@@ -54,12 +40,7 @@ mdb_schema <- function(file, table, condense = FALSE) {
   )
   z <- vapply(y[, 2], list_switch, character(1), mdb_col_types)
   names(z) <- y[, 1]
-  spec <- readr::as.col_spec(z)
-  if (isTRUE(condense)) {
-    readr::cols_condense(spec)
-  } else {
-    return(spec)
-  }
+  if (isTRUE(condense)) unique(z) else z
 }
 
 # types from mdbtools/src/libmdb/backend.c

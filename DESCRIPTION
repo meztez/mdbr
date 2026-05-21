@@ -19,7 +19,6 @@ BugReports: https://github.com/k5cents/mdbr/issues
 Imports:
     DBI,
     methods,
-    readr,
     utils,
     jsonlite
 Suggests:
