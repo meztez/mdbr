@@ -16,28 +16,41 @@ mdb_tables <- function(
   system = FALSE,
   single_column = FALSE,
   delimiter = NULL,
-  type = c("table", "query", "systable", "any", "all",
-           "form", "macro", "report", "linkedtable",
-           "module", "relationship", "dbprop"),
+  type = c(
+    "table",
+    "query",
+    "systable",
+    "any",
+    "all",
+    "form",
+    "macro",
+    "report",
+    "linkedtable",
+    "module",
+    "relationship",
+    "dbprop"
+  ),
   show_type = FALSE,
   as_text = FALSE
 ) {
   type <- match.arg(type)
-  con <- .mdb_connect(file)
-  on.exit(DBI::dbDisconnect(con), add = TRUE)
-
-  tables     <- DBI::dbListTables(con)
-  user_tables <- tables[!grepl("^MSys", tables)]
-  sys_tables  <- tables[grepl("^MSys", tables)]
-  queries     <- .native_list_queries(.mdb_normalize_path(file))
+  path <- .mdb_normalize_path(file)
+  user_tables <- .native_list_tables(path)
+  queries     <- .native_list_queries(path)
 
   out <- switch(
     type,
     table   = user_tables,
     query   = queries,
-    systable = sys_tables,
-    any     = c(user_tables, if (isTRUE(system)) sys_tables, queries),
-    all     = c(user_tables, if (isTRUE(system)) sys_tables, queries),
+    systable = {
+      warning(
+        "System tables are not accessible in library-only mode; returning empty result.",
+        call. = FALSE
+      )
+      character(0)
+    },
+    any = c(user_tables, queries),
+    all = c(user_tables, queries),
     {
       warning(
         sprintf(
@@ -49,10 +62,6 @@ mdb_tables <- function(
       character(0)
     }
   )
-
-  if (type %in% c("table", "any", "all") && isFALSE(system)) {
-    out <- out[!grepl("^MSys", out)]
-  }
 
   if (isTRUE(show_type)) {
     out <- ifelse(

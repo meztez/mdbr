@@ -589,14 +589,7 @@ mdb_hexdump <- function(path, pagenumber = NULL, page_size = 4096L, n = 256L) {
 #' @param delimiter Equivalent to `-d/--delimiter`.
 #'
 #' @return No return; always errors in read-only mode.
-#' @examples
-#' db <- mdbr:::.mdb_example_nwind_path()
-#' if (nzchar(db)) {
-#'   csv <- tempfile(fileext = ".csv")
-#'   writeLines("id,name\n1,alpha", csv)
-#'   try(mdb_import(db, "Products", csv))
-#' }
-#' @export
+#' @keywords internal
 mdb_import <- function(
   path,
   table,
