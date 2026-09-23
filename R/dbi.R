@@ -1,7 +1,10 @@
 #' Create an mdbr DBI Driver
 #'
 #' `mdb()` is the canonical DBI-style constructor for connecting to Microsoft
-#' Access '.mdb' and '.accdb' files.
+#' Access '.mdb' and '.accdb' files. `dbSendQuery()` currently materializes SQL
+#' results eagerly; for a streaming named table use [mdb_stream_table()].
+#' Existing export helpers remain eager and should not be used for bounded-
+#' memory conversion.
 #'
 #' @return A DBI driver for '.mdb' and '.accdb' files.
 #' @examples
@@ -34,7 +37,10 @@ methods::setClass(
   slots = c(
     data = "data.frame",
     position = "integer",
-    completed = "logical"
+    completed = "logical",
+    cursor = "ANY",
+    state = "environment",
+    prototype = "data.frame"
   )
 )
 
@@ -182,8 +188,9 @@ methods::setMethod(
   function(conn, name, ...) {
     .require_valid_connection(conn)
     table_name <- .as_table_name(name)
-    native <- .native_read_table(conn@path, table_name)
-    .coerce_mdb_data_frame(.as_data_frame(native), native)
+    res <- mdb_stream_table(conn, table_name)
+    on.exit(DBI::dbClearResult(res), add = TRUE)
+    DBI::dbFetch(res, n = -1L)
   }
 )
 
@@ -218,12 +225,17 @@ methods::setMethod(
     .require_valid_connection(conn)
     native <- .native_run_query(conn@path, statement)
     data <- .coerce_mdb_data_frame(.as_data_frame(native), native)
-    methods::new(
+    result <- methods::new(
       "MdbResult",
       data = data,
       position = 0L,
-      completed = nrow(data) == 0L
+      completed = nrow(data) == 0L,
+      cursor = NULL,
+      state = new.env(parent = emptyenv()),
+      prototype = data[0, , drop = FALSE]
     )
+    result@state$valid <- TRUE
+    result
   }
 )
 
@@ -253,17 +265,58 @@ methods::setMethod(
   "dbFetch",
   "MdbResult",
   function(res, n = -1, ...) {
+    if (!is.null(res@cursor)) {
+      if (!isTRUE(res@state$valid)) {
+        stop("Result has been cleared.", call. = FALSE)
+      }
+      if (length(n) != 1L || !is.numeric(n) || is.na(n) ||
+          (!is.infinite(n) && n != floor(n))) {
+        stop("`n` must be a whole number.", call. = FALSE)
+      }
+      if (n == 0 || isTRUE(res@state$completed)) {
+        return(res@prototype)
+      }
+      if (n < 0 || is.infinite(n)) {
+        chunks <- list()
+        repeat {
+          chunk <- DBI::dbFetch(res, n = 1000L)
+          if (nrow(chunk)) chunks[[length(chunks) + 1L]] <- chunk
+          if (!nrow(chunk) || isTRUE(res@state$completed)) break
+        }
+        return(if (length(chunks)) do.call(rbind, chunks) else res@prototype)
+      }
+      if (n > .Machine$integer.max) {
+        stop("`n` exceeds the maximum batch size.", call. = FALSE)
+      }
+      fetched <- FALSE
+      on.exit(if (!fetched) DBI::dbClearResult(res), add = TRUE)
+      raw <- .native_cursor_fetch(res@cursor, as.integer(n))
+      chunk <- .cursor_data_frame(raw, res@prototype)
+      res@state$completed <- isTRUE(attr(raw, "mdb_exhausted"))
+      res@state$position <- res@state$position + nrow(chunk)
+      fetched <- TRUE
+      return(chunk)
+    }
     start <- res@position + 1L
     total <- nrow(res@data)
 
+    if (!isTRUE(res@state$valid)) {
+      stop("Result has been cleared.", call. = FALSE)
+    }
+    if (length(n) != 1L || !is.numeric(n) || is.na(n) ||
+        (!is.infinite(n) && n != floor(n))) {
+      stop("`n` must be a whole number.", call. = FALSE)
+    }
     if (n < 0 || is.infinite(n)) {
       end <- total
     } else {
-      end <- min(total, res@position + as.integer(n))
+      end <- min(total, res@position + n)
     }
 
-    if (start > total) {
-      res@completed <- TRUE
+    if (start > total || n == 0) {
+      if (start > total) {
+        res@completed <- TRUE
+      }
       return(res@data[0, , drop = FALSE])
     }
 
@@ -278,6 +331,9 @@ methods::setMethod(
   "dbHasCompleted",
   "MdbResult",
   function(res, ...) {
+    if (!is.null(res@cursor)) {
+      return(isTRUE(res@state$completed))
+    }
     isTRUE(res@completed)
   }
 )
@@ -286,7 +342,10 @@ methods::setMethod(
   "dbIsValid",
   "MdbResult",
   function(dbObj, ...) {
-    isTRUE(!dbObj@completed || dbObj@position <= nrow(dbObj@data))
+    if (!is.null(dbObj@cursor)) {
+      return(isTRUE(dbObj@state$valid) && .native_cursor_valid(dbObj@cursor))
+    }
+    isTRUE(dbObj@state$valid)
   }
 )
 
@@ -294,7 +353,14 @@ methods::setMethod(
   "dbClearResult",
   "MdbResult",
   function(res, ...) {
-    res@completed <- TRUE
+    if (!is.null(res@cursor)) {
+      .native_cursor_close(res@cursor)
+      res@state$valid <- FALSE
+      res@state$completed <- TRUE
+    } else {
+      res@state$valid <- FALSE
+      res@completed <- TRUE
+    }
     TRUE
   }
 )
