@@ -19,7 +19,7 @@
 #' @importFrom tibble as_tibble
 #' @examples
 #' \dontrun{
-#' read_mdb(mdb_example(), "Airlines")
+#' read_mdb(mdb_example(), "Shippers")
 #' }
 #' @export
 read_mdb <- function(file, table, col_names = TRUE, col_types = NULL, ...) {

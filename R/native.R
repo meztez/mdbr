@@ -467,21 +467,7 @@
 .mdb_example_nwind_path <- function() {
   candidates <- c(
     Sys.getenv("MDBR_EXAMPLE_DB", unset = ""),
-    system.file(
-      "testthat",
-      "mdbtestdata",
-      "data",
-      "nwind.mdb",
-      package = "mdbr"
-    ),
-    system.file(
-      "tests",
-      "testthat",
-      "mdbtestdata",
-      "data",
-      "nwind.mdb",
-      package = "mdbr"
-    )
+    system.file("extdata", "nwind.mdb", package = "mdbr")
   )
   candidates <- unique(candidates[nzchar(candidates)])
   hits <- candidates[file.exists(candidates)]

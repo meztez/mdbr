@@ -176,8 +176,12 @@ static SEXP cursor_cell(MdbCursor *cursor, MdbColumn *col) {
   if (capacity < 256) capacity = 256;
   old_size = cursor->mdb->bind_size;
   cursor->mdb->bind_size = capacity;
-  text = mdb_col_to_string(cursor->mdb, cursor->mdb->pg_buf, col->cur_value_start,
-                           col->col_type, col->cur_value_len);
+  if (col->col_type == MDB_NUMERIC)
+    text = mdb_numeric_to_string(cursor->mdb, col->cur_value_start,
+                                 col->col_scale, col->col_prec);
+  else
+    text = mdb_col_to_string(cursor->mdb, cursor->mdb->pg_buf, col->cur_value_start,
+                             col->col_type, col->cur_value_len);
   cursor->mdb->bind_size = old_size;
   if (!text) Rf_error("Failed to convert Access value.");
   if (strlen(text) >= capacity - 1) {
@@ -199,10 +203,13 @@ static SEXP cursor_fetch_impl(void *data) {
   FetchArgs *args = data;
   MdbCursor *cursor = args->cursor;
   int count = 0, i, ncol = cursor->table->num_cols;
+  PROTECT_INDEX rows_index;
   SEXP out = PROTECT(Rf_allocVector(VECSXP, ncol));
   SEXP names = PROTECT(Rf_allocVector(STRSXP, ncol));
   SEXP types = PROTECT(Rf_allocVector(INTSXP, ncol));
-  SEXP rows = PROTECT(Rf_allocVector(VECSXP, args->n));
+  int capacity = args->n < 64 ? args->n : 64;
+  SEXP rows;
+  PROTECT_WITH_INDEX(rows = Rf_allocVector(VECSXP, capacity), &rows_index);
   for (i = 0; i < ncol; i++) {
     MdbColumn *col = g_ptr_array_index(cursor->table->columns, i);
     SET_STRING_ELT(names, i, Rf_mkChar(col->name));
@@ -221,6 +228,14 @@ static SEXP cursor_fetch_impl(void *data) {
       SEXP cell = PROTECT(cursor_cell(cursor, col));
       SET_VECTOR_ELT(row, i, cell);
       UNPROTECT(1);
+    }
+    if (count == capacity) {
+      int next = capacity > args->n / 2 ? args->n : capacity * 2;
+      SEXP grown = PROTECT(Rf_allocVector(VECSXP, next));
+      for (i = 0; i < count; i++) SET_VECTOR_ELT(grown, i, VECTOR_ELT(rows, i));
+      REPROTECT(rows = grown, rows_index);
+      UNPROTECT(1);
+      capacity = next;
     }
     SET_VECTOR_ELT(rows, count++, row);
     UNPROTECT(1);

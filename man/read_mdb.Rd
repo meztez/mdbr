@@ -32,6 +32,6 @@ use \code{\link[=mdb_stream_table]{mdb_stream_table()}} for bounded batch reads.
 }
 \examples{
 \dontrun{
-read_mdb(mdb_example(), "Airlines")
+read_mdb(mdb_example(), "Shippers")
 }
 }

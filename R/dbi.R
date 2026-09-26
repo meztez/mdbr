@@ -235,6 +235,8 @@ methods::setMethod(
       prototype = data[0, , drop = FALSE]
     )
     result@state$valid <- TRUE
+    result@state$position <- 0L
+    result@state$completed <- nrow(data) == 0L
     result
   }
 )
@@ -269,8 +271,12 @@ methods::setMethod(
       if (!isTRUE(res@state$valid)) {
         stop("Result has been cleared.", call. = FALSE)
       }
-      if (length(n) != 1L || !is.numeric(n) || is.na(n) ||
-          (!is.infinite(n) && n != floor(n))) {
+      if (
+        length(n) != 1L ||
+          !is.numeric(n) ||
+          is.na(n) ||
+          (!is.infinite(n) && n != floor(n))
+      ) {
         stop("`n` must be a whole number.", call. = FALSE)
       }
       if (n == 0 || isTRUE(res@state$completed)) {
@@ -280,7 +286,9 @@ methods::setMethod(
         chunks <- list()
         repeat {
           chunk <- DBI::dbFetch(res, n = 1000L)
-          if (nrow(chunk)) chunks[[length(chunks) + 1L]] <- chunk
+          if (nrow(chunk)) {
+            chunks[[length(chunks) + 1L]] <- chunk
+          }
           if (!nrow(chunk) || isTRUE(res@state$completed)) break
         }
         return(if (length(chunks)) do.call(rbind, chunks) else res@prototype)
@@ -297,32 +305,36 @@ methods::setMethod(
       fetched <- TRUE
       return(chunk)
     }
-    start <- res@position + 1L
+    start <- res@state$position + 1L
     total <- nrow(res@data)
 
     if (!isTRUE(res@state$valid)) {
       stop("Result has been cleared.", call. = FALSE)
     }
-    if (length(n) != 1L || !is.numeric(n) || is.na(n) ||
-        (!is.infinite(n) && n != floor(n))) {
+    if (
+      length(n) != 1L ||
+        !is.numeric(n) ||
+        is.na(n) ||
+        (!is.infinite(n) && n != floor(n))
+    ) {
       stop("`n` must be a whole number.", call. = FALSE)
     }
     if (n < 0 || is.infinite(n)) {
       end <- total
     } else {
-      end <- min(total, res@position + n)
+      end <- min(total, res@state$position + n)
     }
 
     if (start > total || n == 0) {
       if (start > total) {
-        res@completed <- TRUE
+        res@state$completed <- TRUE
       }
       return(res@data[0, , drop = FALSE])
     }
 
     chunk <- res@data[start:end, , drop = FALSE]
-    res@position <- as.integer(end)
-    res@completed <- end >= total
+    res@state$position <- as.integer(end)
+    res@state$completed <- end >= total
     chunk
   }
 )
@@ -334,7 +346,7 @@ methods::setMethod(
     if (!is.null(res@cursor)) {
       return(isTRUE(res@state$completed))
     }
-    isTRUE(res@completed)
+    isTRUE(res@state$completed)
   }
 )
 
@@ -359,7 +371,7 @@ methods::setMethod(
       res@state$completed <- TRUE
     } else {
       res@state$valid <- FALSE
-      res@completed <- TRUE
+      res@state$completed <- TRUE
     }
     TRUE
   }
